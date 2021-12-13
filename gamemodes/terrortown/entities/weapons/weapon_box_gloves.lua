@@ -24,20 +24,37 @@ SWEP.HoldType = "fist"
 SWEP.ViewModel = Model("models/weapons/v_boxer.mdl")
 SWEP.WorldModel = Model("models/weapons/w_boxer.mdl")
 
+-- All animations are at 30fps
+local animationLengths = {
+    -- 30 frames
+    [ACT_VM_DRAW] = 1,
+    -- 20 frames
+    [ACT_VM_PRIMARYATTACK] = 0.66666666666666666666666666666667,
+    -- 20 frames
+    [ACT_VM_SECONDARYATTACK] = 0.66666666666666666666666666666667,
+    -- 90 frames
+    [ACT_VM_PULLBACK] = 3,
+    -- 217 frames
+    [ACT_VM_HITCENTER] = 7.2333333333333333333333333333333,
+    -- 20 frames
+    [ACT_VM_IDLE] = 0.66666666666666666666666666666667
+}
+
 SWEP.HitDistance = 250
 
-SWEP.Primary.Damage = 65
-SWEP.Primary.ClipSize = 1
-SWEP.Primary.DefaultClip = 1
-SWEP.Primary.Automatic = true
-SWEP.Primary.Ammo = "none"
-SWEP.Primary.Delay = 0.7
+SWEP.Primary.Damage         = 15
+SWEP.Primary.ClipSize       = 1
+SWEP.Primary.DefaultClip    = 1
+SWEP.Primary.Automatic      = true
+SWEP.Primary.Ammo           = "none"
+SWEP.Primary.Delay          = animationLengths[ACT_VM_PRIMARYATTACK]
 
-SWEP.Secondary.ClipSize = 5
-SWEP.Secondary.DefaultClip = 5
-SWEP.Secondary.Automatic = false
-SWEP.Secondary.Ammo = "none"
-SWEP.Secondary.Delay = 2
+SWEP.Secondary.Damage       = 0
+SWEP.Secondary.ClipSize     = 1
+SWEP.Secondary.DefaultClip  = 1
+SWEP.Secondary.Automatic    = true
+SWEP.Secondary.Ammo         = "none"
+SWEP.Secondary.Delay        = animationLengths[ACT_VM_HITCENTER]
 
 SWEP.Kind = WEAPON_ROLE
 
@@ -55,25 +72,36 @@ function SWEP:Initialize()
     return self.BaseClass.Initialize(self)
 end
 
+function SWEP:GoIdle(anim)
+    timer.Create("BoxerGlovesIdle_" .. self:EntIndex(), animationLengths[anim], 1, function()
+        self:SendWeaponAnim(ACT_VM_IDLE)
+    end)
+end
+
 --[[
-Claw Attack
+Punch Attack
 ]]
 
-function SWEP:PlayPunchAnimation()
-    local anim = "fists_right"
-    local vm = self:GetOwner():GetViewModel()
-    vm:SendViewModelMatchingSequence(vm:LookupSequence(anim))
+function SWEP:PlayPunchAnimation(anim)
+    self:SendWeaponAnim(anim)
     self:GetOwner():ViewPunch(Angle( 4, 4, 0 ))
     self:GetOwner():SetAnimation(PLAYER_ATTACK1)
+    self:GoIdle(anim)
 end
 
 function SWEP:PrimaryAttack()
-    self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
+    local anim
+    if math.random(0, 1) == 1 then
+        anim = ACT_VM_PRIMARYATTACK
+    else
+        anim = ACT_VM_SECONDARYATTACK
+    end
+    self:SetNextPrimaryFire(CurTime() + animationLengths[anim])
 
     local owner = self:GetOwner()
     if not IsValid(owner) then return end
 
-    self:PlayPunchAnimation()
+    self:PlayPunchAnimation(anim)
 
     if owner.LagCompensation then -- for some reason not always true
         owner:LagCompensation(true)
@@ -90,9 +118,6 @@ function SWEP:PrimaryAttack()
     self:EmitSound(sound_single)
 
     if IsValid(hitEnt) or tr_main.HitWorld then
-        self:PlayPunchAnimation()
-        self:SendWeaponAnim(ACT_VM_HITCENTER)
-
         if not (CLIENT and (not IsFirstTimePredicted())) then
             local edata = EffectData()
             edata:SetStart(spos)
@@ -110,12 +135,22 @@ function SWEP:PrimaryAttack()
                 util.Effect("Impact", edata)
             end
         end
-    else
-        self:SendWeaponAnim(ACT_VM_MISSCENTER)
     end
 
     if not CLIENT then
         owner:SetAnimation(PLAYER_ATTACK1)
+
+        if IsPlayer(hitEnt) then
+            local dmg = DamageInfo()
+            dmg:SetDamage(self.Primary.Damage)
+            dmg:SetAttacker(owner)
+            dmg:SetInflictor(self)
+            dmg:SetDamageForce(owner:GetAimVector() * 5)
+            dmg:SetDamagePosition(owner:GetPos())
+            dmg:SetDamageType(DMG_SLASH)
+
+            hitEnt:DispatchTraceAttack(dmg, spos + (owner:GetAimVector() * 3), sdest)
+        end
     end
 
     if owner.LagCompensation then
@@ -124,20 +159,45 @@ function SWEP:PrimaryAttack()
 end
 
 --[[
-Secondary Attack
+Flurry of punches Attack
 ]]
 
 function SWEP:SecondaryAttack()
+    local anim = ACT_VM_HITCENTER
+    self:SetNextSecondaryFire(CurTime() + animationLengths[anim])
 
+    local owner = self:GetOwner()
+    if not IsValid(owner) then return end
+
+    self:PlayPunchAnimation(anim)
+
+    -- TODO: World animation?
+
+    if owner.LagCompensation then -- for some reason not always true
+        owner:LagCompensation(true)
+    end
+
+    -- TODO: Logic
+
+    if owner.LagCompensation then
+        owner:LagCompensation(false)
+    end
 end
 
 function SWEP:OnDrop()
     self:Remove()
 end
 
+function SWEP:OnRemove()
+    timer.Remove("BoxerGlovesIdle_" .. self:EntIndex())
+end
+
 function SWEP:Deploy()
-    local vm = self:GetOwner():GetViewModel()
-    vm:SendViewModelMatchingSequence(vm:LookupSequence("fists_draw"))
+    local anim = ACT_VM_DRAW
+    -- Don't let the user use the dagger until the animation finishes
+    self:SetNextPrimaryFire(CurTime() + animationLengths[anim])
+    self:SendWeaponAnim(anim)
+    self:GoIdle(anim)
 end
 
 function SWEP:Holster(weapon)
