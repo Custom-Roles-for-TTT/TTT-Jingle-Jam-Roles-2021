@@ -11,7 +11,7 @@ if CLIENT then
     };
 
     SWEP.Slot = 8 -- add 1 to get the slot number key
-    SWEP.ViewModelFOV = 54
+    SWEP.ViewModelFOV = 41
     SWEP.ViewModelFlip = false
     SWEP.DrawCrosshair = false
 end
@@ -24,20 +24,14 @@ SWEP.HoldType = "fist"
 SWEP.ViewModel = Model("models/weapons/v_boxer.mdl")
 SWEP.WorldModel = Model("models/weapons/w_boxer.mdl")
 
--- All animations are at 30fps
+-- Animation timings, expressed as #frames/fps
 local animationLengths = {
-    -- 30 frames
-    [ACT_VM_DRAW] = 1,
-    -- 20 frames
-    [ACT_VM_PRIMARYATTACK] = 0.66666666666666666666666666666667,
-    -- 20 frames
-    [ACT_VM_SECONDARYATTACK] = 0.66666666666666666666666666666667,
-    -- 90 frames
-    [ACT_VM_PULLBACK] = 3,
-    -- 217 frames
-    [ACT_VM_HITCENTER] = 7.2333333333333333333333333333333,
-    -- 20 frames
-    [ACT_VM_IDLE] = 0.66666666666666666666666666666667
+    [ACT_VM_DRAW] = 30/30,
+    [ACT_VM_PRIMARYATTACK] = 20/30,
+    [ACT_VM_SECONDARYATTACK] = 20/30,
+    [ACT_VM_PULLBACK] = 90/30,
+    [ACT_VM_HITCENTER] = 217/30,
+    [ACT_VM_IDLE] = 16/30
 }
 
 SWEP.HitDistance = 250
@@ -64,6 +58,7 @@ SWEP.IsSilent = false
 -- Pull out faster than standard guns
 SWEP.DeploySpeed = 2
 local sound_single = Sound("Weapon_Crowbar.Single")
+local sound_scream = Sound("scream.mp3")
 
 function SWEP:Initialize()
     if CLIENT then
@@ -96,7 +91,10 @@ function SWEP:PrimaryAttack()
     else
         anim = ACT_VM_SECONDARYATTACK
     end
-    self:SetNextPrimaryFire(CurTime() + animationLengths[anim])
+
+    local delay = animationLengths[anim]
+    self:SetNextSecondaryFire(CurTime() + delay)
+    self:SetNextPrimaryFire(CurTime() + delay)
 
     local owner = self:GetOwner()
     if not IsValid(owner) then return end
@@ -163,25 +161,33 @@ Flurry of punches Attack
 ]]
 
 function SWEP:SecondaryAttack()
-    local anim = ACT_VM_HITCENTER
-    self:SetNextSecondaryFire(CurTime() + animationLengths[anim])
+    local prepAnim = ACT_VM_PULLBACK
+    local punchAnim = ACT_VM_HITCENTER
+    local delay = animationLengths[punchAnim] + animationLengths[prepAnim]
+    self:SetNextSecondaryFire(CurTime() + delay)
+    self:SetNextPrimaryFire(CurTime() + delay)
 
     local owner = self:GetOwner()
     if not IsValid(owner) then return end
 
-    self:PlayPunchAnimation(anim)
+    -- Pullback animation which delays the normal punch and logic
+    self:SendWeaponAnim(prepAnim)
+    timer.Create("BoxerGlovesWindUp_" .. self:EntIndex(), animationLengths[prepAnim], 1, function()
+        self:EmitSound(sound_scream)
+        self:PlayPunchAnimation(punchAnim)
 
-    -- TODO: World animation?
+        -- TODO: World animation by doing multiple for the correct duration
 
-    if owner.LagCompensation then -- for some reason not always true
-        owner:LagCompensation(true)
-    end
+        if owner.LagCompensation then -- for some reason not always true
+            owner:LagCompensation(true)
+        end
 
-    -- TODO: Logic
+        -- TODO: Logic
 
-    if owner.LagCompensation then
-        owner:LagCompensation(false)
-    end
+        if owner.LagCompensation then
+            owner:LagCompensation(false)
+        end
+    end)
 end
 
 function SWEP:OnDrop()
@@ -190,6 +196,7 @@ end
 
 function SWEP:OnRemove()
     timer.Remove("BoxerGlovesIdle_" .. self:EntIndex())
+    timer.Remove("BoxerGlovesWindUp_" .. self:EntIndex())
 end
 
 function SWEP:Deploy()
