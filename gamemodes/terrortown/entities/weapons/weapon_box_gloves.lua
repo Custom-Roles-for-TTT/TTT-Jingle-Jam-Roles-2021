@@ -56,6 +56,10 @@ SWEP.DeploySpeed = 2
 local sound_single = Sound("Weapon_Crowbar.Single")
 local sound_scream = Sound("scream.mp3")
 
+if SERVER then
+    CreateConVar("ttt_boxer_drop_chance", "0.33", FCVAR_NONE, "Percent chance a punched player will drop weapon", 0.0, 1.0)
+end
+
 function SWEP:Initialize()
     if CLIENT then
         self:AddHUDHelp("box_gloves_help_pri", "box_gloves_help_sec", true)
@@ -153,7 +157,20 @@ function SWEP:PrimaryAttack()
         owner:LagCompensation(true)
     end
 
-    self:DoPunch(owner)
+    self:DoPunch(owner, function(target)
+        if SERVER then
+            if not IsPlayer(target) then return end
+
+            -- Percent chance to drop weapon
+            local chance = GetConVar("ttt_boxer_drop_chance"):GetFloat()
+            if math.random() < chance then
+                local wep = target:GetActiveWeapon()
+                if not IsValid(wep) then return end
+
+                WEPS.DropNotifiedWeapon(target, wep, false)
+            end
+        end
+    end)
 
     if owner.LagCompensation then
         owner:LagCompensation(false)
@@ -169,7 +186,7 @@ function SWEP:DoFlurryPunch(owner)
         -- TODO: Knockdown
         -- TODO: Effect
         -- TODO: Knockout sound
-        print("Hit " .. target:Nick())
+        print("Flurry Hit " .. target:Nick())
     end)
 end
 
