@@ -37,15 +37,11 @@ local animationLengths = {
 SWEP.HitDistance = 250
 
 SWEP.Primary.Damage         = 15
-SWEP.Primary.ClipSize       = 1
-SWEP.Primary.DefaultClip    = 1
 SWEP.Primary.Automatic      = true
 SWEP.Primary.Ammo           = "none"
 SWEP.Primary.Delay          = animationLengths[ACT_VM_PRIMARYATTACK]
 
 SWEP.Secondary.Damage       = 0
-SWEP.Secondary.ClipSize     = 1
-SWEP.Secondary.DefaultClip  = 1
 SWEP.Secondary.Automatic    = true
 SWEP.Secondary.Ammo         = "none"
 SWEP.Secondary.Delay        = animationLengths[ACT_VM_HITCENTER]
