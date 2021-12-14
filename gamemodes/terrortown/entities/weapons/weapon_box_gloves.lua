@@ -74,7 +74,7 @@ function SWEP:GoIdle(anim)
 end
 
 --[[
-Punch Attack
+Punch attack
 ]]
 
 function SWEP:PlayPunchAnimation(anim)
@@ -84,27 +84,7 @@ function SWEP:PlayPunchAnimation(anim)
     self:GoIdle(anim)
 end
 
-function SWEP:PrimaryAttack()
-    local anim
-    if math.random(0, 1) == 1 then
-        anim = ACT_VM_PRIMARYATTACK
-    else
-        anim = ACT_VM_SECONDARYATTACK
-    end
-
-    local delay = animationLengths[anim]
-    self:SetNextSecondaryFire(CurTime() + delay)
-    self:SetNextPrimaryFire(CurTime() + delay)
-
-    local owner = self:GetOwner()
-    if not IsValid(owner) then return end
-
-    self:PlayPunchAnimation(anim)
-
-    if owner.LagCompensation then -- for some reason not always true
-        owner:LagCompensation(true)
-    end
-
+function SWEP:DoPunch(owner, onplayerhit)
     local spos = owner:GetShootPos()
     local sdest = spos + (owner:GetAimVector() * 70)
     local kmins = Vector(1,1,1) * -10
@@ -148,8 +128,36 @@ function SWEP:PrimaryAttack()
             dmg:SetDamageType(DMG_SLASH)
 
             hitEnt:DispatchTraceAttack(dmg, spos + (owner:GetAimVector() * 3), sdest)
+
+            if onplayerhit then
+                onplayerhit(hitEnt)
+            end
         end
     end
+end
+
+function SWEP:PrimaryAttack()
+    local anim
+    if math.random(0, 1) == 1 then
+        anim = ACT_VM_PRIMARYATTACK
+    else
+        anim = ACT_VM_SECONDARYATTACK
+    end
+
+    local delay = animationLengths[anim]
+    self:SetNextSecondaryFire(CurTime() + delay)
+    self:SetNextPrimaryFire(CurTime() + delay)
+
+    local owner = self:GetOwner()
+    if not IsValid(owner) then return end
+
+    self:PlayPunchAnimation(anim)
+
+    if owner.LagCompensation then -- for some reason not always true
+        owner:LagCompensation(true)
+    end
+
+    self:DoPunch(owner)
 
     if owner.LagCompensation then
         owner:LagCompensation(false)
@@ -157,13 +165,23 @@ function SWEP:PrimaryAttack()
 end
 
 --[[
-Flurry of punches Attack
+Flurry of punches attack
 ]]
+
+function SWEP:DoFlurryPunch(owner)
+    self:DoPunch(owner, function(target)
+        -- TODO: Knockdown
+        -- TODO: Effect
+        -- TODO: Knockout sound
+        print("Hit " .. target:Nick())
+    end)
+end
 
 function SWEP:SecondaryAttack()
     local prepAnim = ACT_VM_PULLBACK
     local punchAnim = ACT_VM_HITCENTER
-    local delay = animationLengths[punchAnim] + animationLengths[prepAnim]
+    local punchTime = animationLengths[punchAnim]
+    local delay = punchTime + animationLengths[prepAnim]
     self:SetNextSecondaryFire(CurTime() + delay)
     self:SetNextPrimaryFire(CurTime() + delay)
 
@@ -171,22 +189,32 @@ function SWEP:SecondaryAttack()
     if not IsValid(owner) then return end
 
     -- Pullback animation which delays the normal punch and logic
+    timer.Remove("BoxerGlovesIdle_" .. self:EntIndex())
     self:SendWeaponAnim(prepAnim)
+
     timer.Create("BoxerGlovesWindUp_" .. self:EntIndex(), animationLengths[prepAnim], 1, function()
         self:EmitSound(sound_scream)
         self:PlayPunchAnimation(punchAnim)
-
-        -- TODO: World animation by doing multiple for the correct duration
 
         if owner.LagCompensation then -- for some reason not always true
             owner:LagCompensation(true)
         end
 
-        -- TODO: Logic
+        -- Do multiple punch animations in thirdperson to make it look like the player is still punching
+        self:DoFlurryPunch(owner)
+        local singlePunchTime = 0.45
+        local endTime = CurTime() + punchTime - singlePunchTime
+        timer.Create("BoxerGlovesFlurry3p_" .. self:EntIndex(), singlePunchTime, 0, function()
+            if CurTime() >= endTime then
+                timer.Remove("BoxerGlovesFlurry3p_" .. self:EntIndex())
 
-        if owner.LagCompensation then
-            owner:LagCompensation(false)
-        end
+                if owner.LagCompensation then
+                    owner:LagCompensation(false)
+                end
+            else
+                self:DoFlurryPunch(owner)
+            end
+        end)
     end)
 end
 
@@ -197,6 +225,7 @@ end
 function SWEP:OnRemove()
     timer.Remove("BoxerGlovesIdle_" .. self:EntIndex())
     timer.Remove("BoxerGlovesWindUp_" .. self:EntIndex())
+    timer.Remove("BoxerGlovesFlurry3p_" .. self:EntIndex())
 end
 
 function SWEP:Deploy()
