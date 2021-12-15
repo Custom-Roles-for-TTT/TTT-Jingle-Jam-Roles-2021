@@ -56,10 +56,6 @@ SWEP.DeploySpeed = 2
 local sound_single = Sound("Weapon_Crowbar.Single")
 local sound_scream = Sound("scream.mp3")
 
-if SERVER then
-    CreateConVar("ttt_boxer_drop_chance", "0.33", FCVAR_NONE, "Percent chance a punched player will drop weapon", 0.0, 1.0)
-end
-
 function SWEP:Initialize()
     if CLIENT then
         self:AddHUDHelp("box_gloves_help_pri", "box_gloves_help_sec", true)
@@ -183,10 +179,9 @@ Flurry of punches attack
 
 function SWEP:DoFlurryPunch(owner)
     self:DoPunch(owner, function(target)
-        -- TODO: Knockdown
-        -- TODO: Effect
-        -- TODO: Knockout sound
-        print("Flurry Hit " .. target:Nick())
+        -- Knock out the target if they aren't already
+        if target:GetNWBool("BoxerKnockedOut", false) then return end
+        target:BoxerKnockout()
     end)
 end
 
