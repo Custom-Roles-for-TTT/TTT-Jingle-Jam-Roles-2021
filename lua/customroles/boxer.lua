@@ -40,6 +40,8 @@ if SERVER then
         if IsValid(self.boxerRagdoll) then return end
 
         self:SetNWBool("BoxerKnockedOut", true)
+        self:SelectWeapon("weapon_ttt_unarmed")
+
         -- TODO: Dizzy effect
         -- TODO: Knockout sound
 
