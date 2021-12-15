@@ -27,6 +27,13 @@ table.insert(ROLE.convars, {
     decimal = 0
 })
 
+ROLE.translations = {
+    ["english"] = {
+        ["box_gloves_help_pri"] = "Use {primaryfire} to knock weapons out of players' hands",
+        ["box_gloves_help_sec"] = "Attack with {secondaryfire} to knock players out"
+    }
+}
+
 RegisterRole(ROLE)
 
 if SERVER then

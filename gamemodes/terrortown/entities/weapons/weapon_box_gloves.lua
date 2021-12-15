@@ -201,7 +201,7 @@ function SWEP:SecondaryAttack()
     self:SendWeaponAnim(prepAnim)
 
     timer.Create("BoxerGlovesWindUp_" .. self:EntIndex(), animationLengths[prepAnim], 1, function()
-        self:EmitSound(sound_scream)
+        owner:EmitSound(sound_scream)
         self:PlayPunchAnimation(punchAnim)
 
         if owner.LagCompensation then -- for some reason not always true
