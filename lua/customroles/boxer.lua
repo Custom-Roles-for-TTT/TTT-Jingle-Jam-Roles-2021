@@ -42,6 +42,8 @@ if SERVER then
     CreateConVar("ttt_boxer_drop_chance", "0.33", FCVAR_NONE, "Percent chance a punched player will drop weapon", 0.0, 1.0)
     local knockout_duration = CreateConVar("ttt_boxer_knockout_duration", "10", FCVAR_NONE, "Time punched player should be knocked down", 1, 60)
 
+    local knockout = Sound("knockout.mp3")
+
     local plymeta = FindMetaTable("Player")
     function plymeta:BoxerKnockout()
         local boxerRagdoll = self:GetNWEntity("BoxerRagdoll", nil)
@@ -49,9 +51,7 @@ if SERVER then
 
         self:SetNWBool("BoxerKnockedOut", true)
         self:SelectWeapon("weapon_ttt_unarmed")
-
-        -- TODO: Dizzy effect
-        -- TODO: Knockout sound
+        self:EmitSound(knockout)
 
         -- Create ragdoll and lock their view
         local ragdoll = ents.Create("prop_ragdoll")
