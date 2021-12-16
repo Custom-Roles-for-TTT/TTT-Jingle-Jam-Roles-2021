@@ -233,25 +233,26 @@ if SERVER then
         SetGlobalInt("ttt_boxer_knockout_duration", knockout_duration:GetInt())
     end)
 
-    -- TODO:
     -- Win condition
     hook.Add("TTTCheckForWin", "Boxer_CheckForWin", function()
         local boxer_alive = false
         local other_alive = false
+        local other_knockedout = true
         for _, v in ipairs(player.GetAll()) do
             if v:Alive() and v:IsTerror() then
                 if v:IsBoxer() then
                     boxer_alive = true
                 elseif not v:ShouldActLikeJester() then
                     other_alive = true
+                    if not v:GetNWBool("BoxerKnockedOut", false) then
+                        other_knockedout = false
+                    end
                 end
             end
         end
 
-        if boxer_alive and not other_alive then
+        if boxer_alive and (not other_alive or other_knockedout) then
             return WIN_BOXER
-        elseif boxer_alive then
-            return WIN_NONE
         end
     end)
 
