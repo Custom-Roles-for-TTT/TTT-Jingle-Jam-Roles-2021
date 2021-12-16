@@ -245,5 +245,12 @@ function SWEP:Deploy()
 end
 
 function SWEP:Holster(weapon)
-    return true
+    -- Stop the wind-up and let the player go back to punching if they switch weapons
+    if timer.Exists("BoxerGlovesWindUp_" .. self:EntIndex()) then
+        timer.Remove("BoxerGlovesWindUp_" .. self:EntIndex())
+        self:SetNextSecondaryFire(CurTime())
+        self:SetNextPrimaryFire(CurTime())
+    end
+    -- Don't let the player switch weapon while doing the flurry
+    return not timer.Exists("BoxerGlovesFlurry3p_" .. self:EntIndex())
 end
