@@ -44,7 +44,8 @@ if SERVER then
 
     local plymeta = FindMetaTable("Player")
     function plymeta:BoxerKnockout()
-        if IsValid(self.boxerRagdoll) then return end
+        local boxerRagdoll = self:GetNWEntity("BoxerRagdoll", nil)
+        if IsValid(boxerRagdoll) then return end
 
         self:SetNWBool("BoxerKnockedOut", true)
         self:SelectWeapon("weapon_ttt_unarmed")
@@ -76,7 +77,7 @@ if SERVER then
             end
         end
 
-        self.boxerRagdoll = ragdoll
+        self:SetNWEntity("BoxerRagdoll", ragdoll)
         self:Spectate(OBS_MODE_CHASE)
         self:SpectateEntity(ragdoll)
 
@@ -92,7 +93,8 @@ if SERVER then
     end
 
     function plymeta:BoxerRevive()
-        if not IsValid(self.boxerRagdoll) then return end
+        local boxerRagdoll = self:GetNWEntity("BoxerRagdoll", nil)
+        if not IsValid(boxerRagdoll) then return end
 
         self:SetNWBool("BoxerKnockedOut", false)
 
@@ -101,25 +103,26 @@ if SERVER then
         self:UnSpectate()
         self:SetParent()
         self:Spawn()
-        self:SetPos(self.boxerRagdoll:GetPos())
-        self:SetVelocity(self.boxerRagdoll:GetVelocity())
-        local yaw = self.boxerRagdoll:GetAngles().yaw
+        self:SetPos(boxerRagdoll:GetPos())
+        self:SetVelocity(boxerRagdoll:GetVelocity())
+        local yaw = boxerRagdoll:GetAngles().yaw
 		self:SetAngles(Angle(0, yaw, 0))
-        self:SetModel(self.boxerRagdoll:GetModel())
+        self:SetModel(boxerRagdoll:GetModel())
 
         -- Let weapons be seen again
         self:DrawViewModel(true)
         self:DrawWorldModel(true)
 
-        local newhealth = self.boxerRagdoll.playerHealth
+        local newhealth = boxerRagdoll.playerHealth
         if newhealth <= 0 then
             newhealth = 1
         end
         self:SetHealth(newhealth)
         SetRoleMaxHealth(self)
 
-        SafeRemoveEntity(self.boxerRagdoll)
-        self.boxerRagdoll = nil
+        SafeRemoveEntity(boxerRagdoll)
+        boxerRagdoll = nil
+        self:SetNWEntity("BoxerRagdoll", nil)
     end
 
     local function TransferRagdollDamage(rag, dmginfo)
@@ -171,7 +174,7 @@ if SERVER then
             ply = ent.ragdolledPly
         elseif IsPlayer(ent) then
             ply = ent
-            rag = ply.boxerRagdoll
+            rag = ply:GetNWEntity("BoxerRagdoll", nil)
         end
 
         if not IsValid(rag) then return end
@@ -185,12 +188,73 @@ if SERVER then
     hook.Add("TTTPrepareRound", "Boxer_PrepareRound", function()
         for _, v in pairs(player.GetAll()) do
             v:SetNWBool("BoxerKnockedOut", false)
+            v:SetNWEntity("BoxerRagdoll", nil)
             timer.Remove("BoxerKnockout_" .. v:SteamID64())
         end
     end)
+
+    -- TODO: Win condition
 end
 
 if CLIENT then
+    local MathCos = math.cos
+    local MathSin = math.sin
+
     -- TODO: Knocked out progress bar
     -- TODO: "Press E to revive" for knocked out players
+    -- TODO: Tutorial
+    -- TODO: Win events
+
+    local function GetHeadPos(ply, rag)
+        local bone = rag:LookupBone("ValveBiped.Bip01_Head1")
+        local pos
+        if bone then
+            local _
+            pos, _ = rag:GetBonePosition(bone)
+        else
+            pos = rag:GetPos()
+        end
+
+        pos.z = 15
+        local plyPos = ply:GetPos()
+        plyPos.z = pos.z
+
+        -- Shift further toward the head, rather than the neck area
+        local dir = (plyPos - pos):GetNormal()
+        return pos + (dir * -5)
+    end
+
+    hook.Add("TTTPlayerAliveClientThink", "Boxer_KnockedOut_TTTPlayerAliveClientThink", function(client, ply)
+        local ragdoll = ply:GetNWEntity("BoxerRagdoll", nil)
+        if not IsValid(ragdoll) then return end
+
+        if ply:GetNWBool("BoxerKnockedOut", false) then
+            if not ragdoll.KnockoutEmitter then ragdoll.KnockoutEmitter = ParticleEmitter(ragdoll:GetPos()) end
+            if not ragdoll.KnockoutNextPart then ragdoll.KnockoutNextPart = CurTime() end
+            if not ragdoll.KnockoutDir then ragdoll.KnockoutDir = 0 end
+            local pos = ragdoll:GetPos()
+            if ragdoll.KnockoutNextPart < CurTime() then
+                if client:GetPos():Distance(pos) <= 3000 then
+                    ragdoll.KnockoutEmitter:SetPos(pos)
+                    ragdoll.KnockoutNextPart = CurTime() + 0.02
+                    ragdoll.KnockoutDir = ragdoll.KnockoutDir + 0.25
+                    local radius = 7
+                    local vec = Vector(MathSin(ragdoll.KnockoutDir) * radius, MathCos(ragdoll.KnockoutDir) * radius, 10)
+                    local particle = ragdoll.KnockoutEmitter:Add("particle/wisp.vmt", GetHeadPos(ply, ragdoll) + vec)
+                    particle:SetVelocity(Vector(0, 0, 0))
+                    particle:SetDieTime(1)
+                    particle:SetStartAlpha(200)
+                    particle:SetEndAlpha(0)
+                    particle:SetStartSize(1)
+                    particle:SetEndSize(1)
+                    particle:SetRoll(0)
+                    particle:SetRollDelta(0)
+                    particle:SetColor(200, 230, 90)
+                end
+            end
+        elseif ragdoll.KnockoutEmitter then
+            ragdoll.KnockoutEmitter:Finish()
+            ragdoll.KnockoutEmitter = nil
+        end
+    end)
 end
