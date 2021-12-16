@@ -30,7 +30,8 @@ table.insert(ROLE.convars, {
 ROLE.translations = {
     ["english"] = {
         ["box_gloves_help_pri"] = "Use {primaryfire} to knock weapons out of players' hands",
-        ["box_gloves_help_sec"] = "Attack with {secondaryfire} to knock players out"
+        ["box_gloves_help_sec"] = "Attack with {secondaryfire} to knock players out",
+        ["box_revive"] = "Press '{usekey}' to revive"
     }
 }
 
@@ -43,8 +44,23 @@ if SERVER then
     local knockout_duration = CreateConVar("ttt_boxer_knockout_duration", "10", FCVAR_NONE, "Time punched player should be knocked down", 1, 60)
 
     local knockout = Sound("knockout.mp3")
-
     local plymeta = FindMetaTable("Player")
+
+    local function OnRagdollUsed(ragdoll, ply)
+        local ragdolledPly = ragdoll:GetNWEntity("BoxerRagdolledPly", nil)
+        if not IsValid(ragdolledPly) then return end
+
+        -- Don't let players un-ragdoll themselves
+        if ragdolledPly == ply then return end
+
+        -- Only let knocked out players be revived
+        if not ragdolledPly:GetNWBool("BoxerKnockedOut", false) then return end
+
+        ragdolledPly:BoxerRevive()
+    end
+
+    -- Match dti.BOOL_FOUND in corpse_shd.lua
+    local BOOL_FOUND = 0
     function plymeta:BoxerKnockout()
         local boxerRagdoll = self:GetNWEntity("BoxerRagdoll", nil)
         if IsValid(boxerRagdoll) then return end
@@ -55,10 +71,15 @@ if SERVER then
 
         -- Create ragdoll and lock their view
         local ragdoll = ents.Create("prop_ragdoll")
-        ragdoll.ragdolledPly = self
+        ragdoll:SetNWEntity("BoxerRagdolledPly", self)
+        ragdoll:SetNWString("nick", self:Nick())
+        ragdoll:SetDTBool(BOOL_FOUND, true)
         ragdoll.playerHealth = self:Health()
         -- Don't let the red matter bomb destroy this ragdoll
         ragdoll.WYOZIBHDontEat = true
+        -- Let the user be revived by other players
+        ragdoll.CanUseKey = true
+        ragdoll.UseOverride = OnRagdollUsed
 
         ragdoll:SetPos(self:GetPos())
         local velocity = self:GetVelocity()
@@ -130,7 +151,7 @@ if SERVER then
 
     local function TransferRagdollDamage(rag, dmginfo)
         if not IsRagdoll(rag) then return end
-        local ply = rag.ragdolledPly
+        local ply = rag:GetNWEntity("BoxerRagdolledPly", nil)
         if not IsPlayer(ply) or not ply:Alive() or ply:IsSpec() then return end
 
         -- Keep track of how much health they have left
@@ -174,7 +195,7 @@ if SERVER then
         local ply, rag
         if IsRagdoll(ent) then
             rag = ent
-            ply = ent.ragdolledPly
+            ply = ent:GetNWEntity("BoxerRagdolledPly", nil)
         elseif IsPlayer(ent) then
             ply = ent
             rag = ply:GetNWEntity("BoxerRagdoll", nil)
@@ -216,7 +237,6 @@ if CLIENT then
         weight = 600
     })
 
-    -- TODO: "Press E to revive" for knocked out players
     -- TODO: Tutorial
     -- TODO: Win events
 
@@ -302,5 +322,33 @@ if CLIENT then
         local duration = GetGlobalInt("ttt_boxer_knockout_duration", 10)
         HUD:PaintBar(8, x, y, width, height, colors, 1 - (diff / duration))
         draw.SimpleText("KNOCKED OUT", "KnockedOut", ScrW() / 2, y + 1, COLOR_WHITE, TEXT_ALIGN_CENTER)
+    end)
+
+    -- Show message indicating they can be revived
+    local MAX_TRACE_LENGTH = math.sqrt(3) * 2 * 16384
+    hook.Add("HUDDrawTargetID", "Boxer_KnockedOut_HUDDrawTargetID", function()
+        local startpos = client:EyePos()
+        local endpos = client:GetAimVector()
+        endpos:Mul(MAX_TRACE_LENGTH)
+        endpos:Add(startpos)
+        local trace = util.TraceLine({
+            start = startpos,
+            endpos = endpos,
+            mask = MASK_SHOT,
+            filter = client:GetObserverMode() == OBS_MODE_IN_EYE and { client, client:GetObserverTarget() } or client
+        })
+        local ent = trace.Entity
+        if (not IsValid(ent)) or ent.NoTarget then return end
+
+        local ragdolledPly = ent:GetNWEntity("BoxerRagdolledPly", nil)
+        if not IsPlayer(ragdolledPly) then return end
+        if not ragdolledPly:GetNWBool("BoxerKnockedOut", false) then return end
+        ent.TargetIDHint = { name = "box_revive_placeholder" }
+    end)
+
+    hook.Add("TTTTargetIDEntityHintLabel", "Boxer_KnockedOut_TTTTargetIDEntityHintLabel", function(ent, cli, text, col)
+        if text == "box_revive_placeholder" then
+            return LANG.GetParamTranslation("box_revive", { usekey = Key("+use", "E") } ), COLOR_WHITE
+        end
     end)
 end
