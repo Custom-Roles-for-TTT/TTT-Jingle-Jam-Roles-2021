@@ -295,7 +295,6 @@ if CLIENT then
         end
     end)
 
-    -- TODO:
     -- Tutorial
     hook.Add("TTTTutorialRoleText", "Boxer_TTTTutorialRoleText", function(role, titleLabel)
         if role == ROLE_BOXER then
