@@ -6,7 +6,12 @@ ROLE.nameplural = "Boxers"
 ROLE.nameext = "a Boxer"
 ROLE.nameshort = "box"
 
-ROLE.desc = [[You are {role}!]]
+ROLE.desc = [[You are {role}! Use your boxing gloves
+to make others drop their weapons or
+knock them out.
+
+Knock out all of the living players at
+the same time to win!]]
 
 ROLE.team = ROLE_TEAM_JESTER
 
@@ -31,11 +36,17 @@ ROLE.translations = {
     ["english"] = {
         ["box_gloves_help_pri"] = "Use {primaryfire} to knock weapons out of players' hands",
         ["box_gloves_help_sec"] = "Attack with {secondaryfire} to knock players out",
-        ["box_revive"] = "Press '{usekey}' to revive"
+        ["box_revive"] = "Press '{usekey}' to revive",
+        ["ev_win_boxer"] = "The {role} pummeled their way to victory",
+        ["win_boxer"] = "The {role} has scored a Knock Out!"
     }
 }
 
 RegisterRole(ROLE)
+
+hook.Add("Initialize", "Boxer_Initialize", function()
+    WIN_BOXER = GenerateNewWinID and GenerateNewWinID(ROLE_BOXER)
+end)
 
 if SERVER then
     AddCSLuaFile()
@@ -222,7 +233,35 @@ if SERVER then
         SetGlobalInt("ttt_boxer_knockout_duration", knockout_duration:GetInt())
     end)
 
-    -- TODO: Win condition
+    -- TODO:
+    -- Win condition
+    hook.Add("TTTCheckForWin", "Boxer_CheckForWin", function()
+        local boxer_alive = false
+        local other_alive = false
+        for _, v in ipairs(player.GetAll()) do
+            if v:Alive() and v:IsTerror() then
+                if v:IsBoxer() then
+                    boxer_alive = true
+                elseif not v:ShouldActLikeJester() then
+                    other_alive = true
+                end
+            end
+        end
+
+        if boxer_alive and not other_alive then
+            return WIN_BOXER
+        elseif boxer_alive then
+            return WIN_NONE
+        end
+    end)
+
+    hook.Add("TTTPrintResultMessage", "Boxer_PrintResultMessage", function(type)
+        if type == WIN_BOXER then
+            LANG.Msg("win_boxer", { role = string.lower(ROLE_STRINGS[ROLE_BOXER]) })
+            ServerLog("Result: " .. ROLE_STRINGS[ROLE_BOXER] .. " wins.\n")
+            return true
+        end
+    end)
 end
 
 if CLIENT then
@@ -237,9 +276,45 @@ if CLIENT then
         weight = 600
     })
 
-    -- TODO: Tutorial
-    -- TODO: Win events
+    -- Win condition and events
+    hook.Add("TTTScoringWinTitle", "Boxer_TTTScoringWinTitle", function(wintype, wintitles, title, secondary_win_role)
+        if wintype == WIN_BOXER then
+            return { txt = "hilite_win_role_singular", params = { role = string.upper(ROLE_STRINGS[ROLE_BOXER]) }, c = ROLE_COLORS[ROLE_BOXER] }
+        end
+    end)
 
+    hook.Add("TTTEventFinishText", "Boxer_TTTEventFinishText", function(e)
+        if e.win == WIN_BOXER then
+            return LANG.GetParamTranslation("ev_win_boxer", { role = string.lower(ROLE_STRINGS[ROLE_BOXER]) })
+        end
+    end)
+
+    hook.Add("TTTEventFinishIconText", "Boxer_TTTEventFinishIconText", function(e, win_string, role_string)
+        if e.win == WIN_BOXER then
+            return win_string, ROLE_STRINGS[ROLE_BOXER]
+        end
+    end)
+
+    -- TODO:
+    -- Tutorial
+    hook.Add("TTTTutorialRoleText", "Boxer_TTTTutorialRoleText", function(role, titleLabel)
+        if role == ROLE_BOXER then
+            local roleColor = GetRoleTeamColor(ROLE_TEAM_BOXER)
+            local traitorColor = ROLE_COLORS[ROLE_TRAITOR]
+            local html =  "The " .. ROLE_STRINGS[ROLE_BOXER] .. " is a <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>jester</span> role whose goal is to knock out all of the living players."
+
+            html = html .. "<span style='display: block; margin-top: 10px;'>The boxing gloves primary attack has a chance to make targetted players <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>drop their weapon</span>.</span>"
+
+            local duration = GetGlobalInt("ttt_boxer_knockout_duration", 10)
+            html = html .. "<span style='display: block; margin-top: 10px;'>Using the secondary attack will <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>knock out</span> the players that are hit for " .. duration .. " seconds.</span>"
+
+            html = html .. "<span style='display: block; margin-top: 10px;'>If the " .. ROLE_STRINGS[ROLE_BOXER] .. " is the only player remaining or all other players are knocked out then <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>they will win!</span></span>"
+
+            return html
+        end
+    end)
+
+    -- Dizzy effect
     local function GetHeadPos(ply, rag)
         local bone = rag:LookupBone("ValveBiped.Bip01_Head1")
         local pos
@@ -259,7 +334,6 @@ if CLIENT then
         return pos + (dir * -5)
     end
 
-    -- Dizzy effect
     hook.Add("TTTPlayerAliveClientThink", "Boxer_KnockedOut_TTTPlayerAliveClientThink", function(cli, ply)
         if not client then
             client = cli
