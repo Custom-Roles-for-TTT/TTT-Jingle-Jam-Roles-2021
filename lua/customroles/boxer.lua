@@ -86,7 +86,9 @@ if SERVER then
         self:DrawWorldModel(false)
 
         -- Timer to revive
-        timer.Create("BoxerKnockout_" .. self:SteamID64(), knockout_duration:GetInt(), 1, function()
+        local duration = knockout_duration:GetInt()
+        self:SetNWInt("BoxerKnockoutEndTime", CurTime() + duration)
+        timer.Create("BoxerKnockout_" .. self:SteamID64(), duration, 1, function()
             if not self:GetNWBool("BoxerKnockedOut", false) then return end
             self:BoxerRevive()
         end)
@@ -97,6 +99,7 @@ if SERVER then
         if not IsValid(boxerRagdoll) then return end
 
         self:SetNWBool("BoxerKnockedOut", false)
+        self:SetNWInt("BoxerKnockoutEndTime", 0)
 
         -- Unragdoll
         self:SpectateEntity(nil)
@@ -188,9 +191,14 @@ if SERVER then
     hook.Add("TTTPrepareRound", "Boxer_PrepareRound", function()
         for _, v in pairs(player.GetAll()) do
             v:SetNWBool("BoxerKnockedOut", false)
+            v:SetNWInt("BoxerKnockoutEndTime", -1)
             v:SetNWEntity("BoxerRagdoll", nil)
             timer.Remove("BoxerKnockout_" .. v:SteamID64())
         end
+    end)
+
+    hook.Add("TTTSyncGlobals", "Boxer_TTTSyncGlobals", function()
+        SetGlobalInt("ttt_boxer_knockout_duration", knockout_duration:GetInt())
     end)
 
     -- TODO: Win condition
@@ -200,7 +208,14 @@ if CLIENT then
     local MathCos = math.cos
     local MathSin = math.sin
 
-    -- TODO: Knocked out progress bar
+    local client
+
+    surface.CreateFont("KnockedOut", {
+        font = "Trebuchet24",
+        size = 22,
+        weight = 600
+    })
+
     -- TODO: "Press E to revive" for knocked out players
     -- TODO: Tutorial
     -- TODO: Win events
@@ -224,7 +239,11 @@ if CLIENT then
         return pos + (dir * -5)
     end
 
-    hook.Add("TTTPlayerAliveClientThink", "Boxer_KnockedOut_TTTPlayerAliveClientThink", function(client, ply)
+    -- Dizzy effect
+    hook.Add("TTTPlayerAliveClientThink", "Boxer_KnockedOut_TTTPlayerAliveClientThink", function(cli, ply)
+        if not client then
+            client = cli
+        end
         local ragdoll = ply:GetNWEntity("BoxerRagdoll", nil)
         if not IsValid(ragdoll) then return end
 
@@ -256,5 +275,32 @@ if CLIENT then
             ragdoll.KnockoutEmitter:Finish()
             ragdoll.KnockoutEmitter = nil
         end
+    end)
+
+    -- Knocked out progress bar
+    local margin = 10
+    local width, height = 200, 25
+    local x = ScrW() / 2 - width / 2
+    local y = margin / 2 + height
+    local colors = {
+        background = Color(30, 60, 100, 222),
+        fill = Color(75, 150, 255, 255)
+    }
+    hook.Add("HUDPaint", "Boxer_KnockedOut_HUDPaint", function()
+        if not client then
+            client = LocalPlayer()
+        end
+
+        if not client:GetNWBool("BoxerKnockedOut", false) then return end
+
+        local endTime = client:GetNWInt("BoxerKnockoutEndTime", 0)
+        if endTime <= 0 then return end
+
+        local diff = endTime - CurTime()
+        if diff <= 0 then return end
+
+        local duration = GetGlobalInt("ttt_boxer_knockout_duration", 10)
+        HUD:PaintBar(8, x, y, width, height, colors, 1 - (diff / duration))
+        draw.SimpleText("KNOCKED OUT", "KnockedOut", ScrW() / 2, y + 1, COLOR_WHITE, TEXT_ALIGN_CENTER)
     end)
 end
