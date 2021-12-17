@@ -161,7 +161,7 @@ function SWEP:PrimaryAttack()
             local chance = GetConVar("ttt_boxer_drop_chance"):GetFloat()
             if math.random() < chance then
                 local wep = target:GetActiveWeapon()
-                if not IsValid(wep) then return end
+                if not IsValid(wep) or not wep.AllowDrop then return end
 
                 WEPS.DropNotifiedWeapon(target, wep, false)
             end
