@@ -1,0 +1,6 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models\weapons\communist_manifesto\red_leather"
+	"$surfaceprop" "default"
+        "$bumpmap" "models\weapons\communist_manifesto\leather_normal"
+}
