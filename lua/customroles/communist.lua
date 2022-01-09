@@ -96,7 +96,7 @@ if CLIENT then
     hook.Add("TTTEventFinishText", "Communist_EventFinishText", function(e)
         print("TTTEventFinishText - " .. e.win)
         if e.win == WIN_COMMUNIST then
-            return LANG.GetParamTranslation("ev_win_communist", { role = ROLE_STRINGS[ROLE_COMMUNIST] })
+            return LANG.GetParamTranslation("ev_win_communist", { role = ROLE_STRINGS_PLURAL[ROLE_COMMUNIST] })
         end
     end)
 
