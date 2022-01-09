@@ -282,7 +282,7 @@ if CLIENT then
             WIN_BOXER = GenerateNewWinID(ROLE_BOXER)
         end)
     else
-        hook.Add("TTTSyncWinIDs", "Boxer_TTTWinIDsSynced", function()
+        hook.Add("TTTSyncWinIDs", "Boxer_TTTSyncWinIDs", function()
             WIN_BOXER = WINS_BY_ROLE[ROLE_BOXER]
         end)
     end

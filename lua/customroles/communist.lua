@@ -67,11 +67,11 @@ if CLIENT then
             RegisterEvent()
         end)
     else
-        hook.Add("TTTSyncWinIDs", "Communist_TTTWinIDsSynced", function()
+        hook.Add("TTTSyncWinIDs", "Communist_TTTSyncWinIDs", function()
             WIN_COMMUNIST = WINS_BY_ROLE[ROLE_COMMUNIST]
         end)
 
-        hook.Add("TTTSyncEventIDs", "Communist_TTTEventIDsSynced", function()
+        hook.Add("TTTSyncEventIDs", "Communist_TTTSyncEventIDs", function()
             EVENT_COMMUNISTCONVERTED = EVENTS_BY_ROLE[ROLE_COMMUNIST]
             RegisterEvent()
         end)
