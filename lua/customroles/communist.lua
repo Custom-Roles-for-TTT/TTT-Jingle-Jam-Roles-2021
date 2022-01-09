@@ -94,21 +94,18 @@ if CLIENT then
     end)
 
     hook.Add("TTTEventFinishText", "Communist_EventFinishText", function(e)
-        print("TTTEventFinishText - " .. e.win)
         if e.win == WIN_COMMUNIST then
             return LANG.GetParamTranslation("ev_win_communist", { role = ROLE_STRINGS_PLURAL[ROLE_COMMUNIST] })
         end
     end)
 
     hook.Add("TTTEventFinishIconText", "Communist_EventFinishIconText", function(e, win_string, role_string)
-        print("TTTEventFinishIconText - " .. e.win)
         if e.win == WIN_COMMUNIST then
             return win_string, ROLE_STRINGS[ROLE_COMMUNIST]
         end
     end)
 
     hook.Add("TTTScoringWinTitle", "Communist_ScoringWinTitle", function(wintype, wintitles, title, secondaryWinRole)
-        print("TTTScoringWinTitle - " .. wintype)
         if wintype == WIN_COMMUNIST then
             return { txt = "hilite_win_communist", params = { role = ROLE_STRINGS[ROLE_COMMUNIST]:upper() }, c = ROLE_COLORS[ROLE_COMMUNIST] }
         end
@@ -153,7 +150,6 @@ if SERVER then
     end)
 
     hook.Add("TTTPrintResultMessage", "Communist_PrintResultMessage", function(type)
-        print("TTTPrintResultMessage - " .. type)
         if type == WIN_COMMUNIST then
             LANG.Msg("win_communist", { role = ROLE_STRINGS[ROLE_COMMUNIST] })
             ServerLog("Result: " .. ROLE_STRINGS[ROLE_COMMUNIST] .. " wins.\n")
