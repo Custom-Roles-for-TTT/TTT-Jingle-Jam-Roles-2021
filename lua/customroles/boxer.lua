@@ -44,10 +44,6 @@ ROLE.translations = {
 
 RegisterRole(ROLE)
 
-hook.Add("Initialize", "Boxer_Initialize", function()
-    WIN_BOXER = GenerateNewWinID and GenerateNewWinID(ROLE_BOXER)
-end)
-
 if SERVER then
     AddCSLuaFile()
 
@@ -196,6 +192,10 @@ if SERVER then
         end
     end
 
+    hook.Add("Initialize", "Boxer_Initialize", function()
+        WIN_BOXER = GenerateNewWinID(ROLE_BOXER)
+    end)
+
     hook.Add("EntityTakeDamage", "Boxer_EntityTakeDamage", function(ent, dmginfo)
         local att = dmginfo:GetAttacker()
         if not IsPlayer(att) then return end
@@ -276,6 +276,16 @@ if CLIENT then
         size = 22,
         weight = 600
     })
+
+    if not CRVersion("1.4.6") then
+        hook.Add("Initialize", "Boxer_Initialize", function()
+            WIN_BOXER = GenerateNewWinID(ROLE_BOXER)
+        end)
+    else
+        hook.Add("TTTSyncWinIDs", "Boxer_TTTWinIDsSynced", function()
+            WIN_BOXER = WINS_BY_ROLE[ROLE_BOXER]
+        end)
+    end
 
     -- Win condition and events
     hook.Add("TTTScoringWinTitle", "Boxer_TTTScoringWinTitle", function(wintype, wintitles, title, secondary_win_role)
