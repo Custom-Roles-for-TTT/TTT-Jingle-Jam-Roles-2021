@@ -48,7 +48,12 @@ local STATE_CONVERT = 1
 
 local sound_anthem = Sound("anthem.mp3")
 
--- TODO: Animations
+-- Animation timings, expressed as #frames/fps
+local animationLengths = {
+    [ACT_VM_DRAW] = 32/24,
+    [ACT_VM_PRIMARYATTACK] = 24/24,
+    [ACT_VM_IDLE] = 240/24
+}
 
 if SERVER then
     CreateConVar("ttt_communist_convert_credits", "1", FCVAR_NONE, "How many credits to award the non-communists when a player is converted", 0, 10)
@@ -70,13 +75,30 @@ function SWEP:SetupDataTables()
 end
 
 function SWEP:Initialize()
-    self.lastTickSecond = 0
-    self.fading = false
-
     if CLIENT then
         self:AddHUDHelp("manifesto_help_pri", "manifesto_help_sec", true)
     end
     return self.BaseClass.Initialize(self)
+end
+
+function SWEP:StopAnimations()
+    timer.Remove("ComAttack_" .. self:EntIndex())
+    timer.Remove("ComIdle_" .. self:EntIndex())
+end
+
+function SWEP:GoIdle(anim)
+    self:StopAnimations()
+    timer.Create("ComIdle_" .. self:EntIndex(), animationLengths[anim], 1, function()
+        self:SendWeaponAnim(ACT_VM_IDLE)
+    end)
+end
+
+function SWEP:Deploy()
+    local anim = ACT_VM_DRAW
+    -- Don't let the user use the manifesto until the animation finishes
+    self:SetNextPrimaryFire(CurTime() + animationLengths[anim])
+    self:SendWeaponAnim(anim)
+    self:GoIdle(anim)
 end
 
 function SWEP:Holster()
@@ -89,6 +111,7 @@ function SWEP:OnDrop()
 end
 
 function SWEP:OnRemove()
+    self:StopAnimations()
     if IsPlayer(self.TargetEntity) then
         self:CancelUnfreeze(self.TargetEntity)
         self:DoUnfreeze()
@@ -156,6 +179,12 @@ function SWEP:Convert(entity)
     if IsValid(owner) then
         owner:EmitSound(sound_anthem)
     end
+
+    self:StopAnimations()
+    self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
+    timer.Create("ComAttack_" .. self:EntIndex(), animationLengths[ACT_VM_PRIMARYATTACK], 0, function()
+        self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
+    end)
     self:SetState(STATE_CONVERT)
     self:SetStartTime(CurTime())
     self:SetMessage("CONVERTING")
@@ -225,6 +254,8 @@ function SWEP:FireError()
     if IsValid(owner) then
         owner:StopSound(sound_anthem)
     end
+    self:StopAnimations()
+    self:SendWeaponAnim(ACT_VM_IDLE)
     self:SetState(STATE_NONE)
     self:UnfreezeTarget()
     self:SetNextPrimaryFire(CurTime() + 0.1)
@@ -302,6 +333,8 @@ else
         if IsValid(owner) then
             owner:StopSound(sound_anthem)
         end
+        self:StopAnimations()
+        self:SendWeaponAnim(ACT_VM_IDLE)
         self:SetState(STATE_NONE)
         self:SetStartTime(-1)
         self:SetMessage('')
@@ -313,6 +346,8 @@ else
         if IsValid(owner) then
             owner:StopSound(sound_anthem)
         end
+        self:StopAnimations()
+        self:SendWeaponAnim(ACT_VM_IDLE)
         self:SetState(STATE_ERROR)
         self:SetStartTime(CurTime())
         self:SetMessage(msg)
