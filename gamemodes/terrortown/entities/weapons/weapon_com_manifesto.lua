@@ -46,15 +46,15 @@ local STATE_ERROR = -1
 local STATE_NONE = 0
 local STATE_CONVERT = 1
 
-local beep = Sound("npc/fast_zombie/fz_alert_close1.wav")
+local sound_anthem = Sound("anthem.mp3")
 
 -- TODO: Animations
 
 if SERVER then
-    CreateConVar("ttt_communist_convert_credits", "1", FCVAR_NONE, "", 0, 10)
-    CreateConVar("ttt_communist_convert_freeze", "1", FCVAR_NONE, "", 0, 1)
-    CreateConVar("ttt_communist_convert_unfreeze_delay", "1", FCVAR_NONE, "", 0, 15)
-    CreateConVar("ttt_communist_device_time", "5", FCVAR_NONE, "", 1, 60)
+    CreateConVar("ttt_communist_convert_credits", "1", FCVAR_NONE, "How many credits to award the non-communists when a player is converted", 0, 10)
+    CreateConVar("ttt_communist_convert_freeze", "1", FCVAR_NONE, "Whether to freeze a player in place while they are being converted", 0, 1)
+    CreateConVar("ttt_communist_convert_unfreeze_delay", "1", FCVAR_NONE, "The number of seconds a player will stay frozen after the conversion process is cancelled", 0, 15)
+    CreateConVar("ttt_communist_convert_time", "5", FCVAR_NONE, "The amount of time it takes the Communist Manifesto to convert a player", 1, 30)
 end
 
 function SWEP:SetupDataTables()
@@ -64,7 +64,7 @@ function SWEP:SetupDataTables()
     self:NetworkVar("String", 0, "Message")
 
     if SERVER then
-        self:SetDeviceDuration(GetConVar("ttt_communist_device_time"):GetInt())
+        self:SetDeviceDuration(GetConVar("ttt_communist_convert_time"):GetInt())
         self:Reset()
     end
 end
@@ -152,6 +152,10 @@ function SWEP:DoUnfreeze()
 end
 
 function SWEP:Convert(entity)
+    local owner = self:GetOwner()
+    if IsValid(owner) then
+        owner:EmitSound(sound_anthem)
+    end
     self:SetState(STATE_CONVERT)
     self:SetStartTime(CurTime())
     self:SetMessage("CONVERTING")
@@ -217,6 +221,10 @@ function SWEP:UnfreezeTarget()
 end
 
 function SWEP:FireError()
+    local owner = self:GetOwner()
+    if IsValid(owner) then
+        owner:StopSound(sound_anthem)
+    end
     self:SetState(STATE_NONE)
     self:UnfreezeTarget()
     self:SetNextPrimaryFire(CurTime() + 0.1)
@@ -290,6 +298,10 @@ if CLIENT then
     end
 else
     function SWEP:Reset()
+        local owner = self:GetOwner()
+        if IsValid(owner) then
+            owner:StopSound(sound_anthem)
+        end
         self:SetState(STATE_NONE)
         self:SetStartTime(-1)
         self:SetMessage('')
@@ -297,11 +309,13 @@ else
     end
 
     function SWEP:Error(msg)
+        local owner = self:GetOwner()
+        if IsValid(owner) then
+            owner:StopSound(sound_anthem)
+        end
         self:SetState(STATE_ERROR)
         self:SetStartTime(CurTime())
         self:SetMessage(msg)
-
-        self:GetOwner():EmitSound(beep, 60, 50, 1)
         self:UnfreezeTarget()
 
         timer.Simple(0.75, function()
