@@ -28,7 +28,7 @@ SWEP.InLoadoutFor = { ROLE_COMMUNIST }
 SWEP.Base = "weapon_tttbase"
 SWEP.Category = WEAPON_CATEGORY_ROLE
 
-SWEP.HoldType = "grenade"
+SWEP.HoldType = "slam"
 
 SWEP.ViewModel = Model("models/weapons/v_communist.mdl")
 SWEP.WorldModel = Model("models/weapons/w_communist_manifesto.mdl")
@@ -55,9 +55,11 @@ local animationLengths = {
     [ACT_VM_IDLE] = 240/24
 }
 
+SWEP.DeploySpeed = animationLengths[ACT_VM_DRAW]
+
 if SERVER then
     CreateConVar("ttt_communist_convert_credits", "1", FCVAR_NONE, "How many credits to award the non-communists when a player is converted", 0, 10)
-    CreateConVar("ttt_communist_convert_freeze", "1", FCVAR_NONE, "Whether to freeze a player in place while they are being converted", 0, 1)
+    CreateConVar("ttt_communist_convert_freeze", "0", FCVAR_NONE, "Whether to freeze a player in place while they are being converted", 0, 1)
     CreateConVar("ttt_communist_convert_unfreeze_delay", "1", FCVAR_NONE, "The number of seconds a player will stay frozen after the conversion process is cancelled", 0, 15)
     CreateConVar("ttt_communist_convert_time", "5", FCVAR_NONE, "The amount of time it takes the Communist Manifesto to convert a player", 1, 30)
 end

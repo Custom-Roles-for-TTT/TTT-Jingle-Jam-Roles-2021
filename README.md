@@ -23,7 +23,7 @@ The Communist is an independent role whose goal is to convert all living players
 ```cpp
 ttt_communist_convert_time           5    // The amount of time it takes the Communist Manifesto to convert a player
 ttt_communist_convert_credits        1    // How many credits to award the non-communists when a player is converted
-ttt_communist_convert_freeze         1    // Whether to freeze a player in place while they are being converted
+ttt_communist_convert_freeze         0    // Whether to freeze a player in place while they are being converted
 ttt_communist_convert_unfreeze_delay 1    // The number of seconds a player will stay frozen after the conversion process is cancelled
 ```
 
