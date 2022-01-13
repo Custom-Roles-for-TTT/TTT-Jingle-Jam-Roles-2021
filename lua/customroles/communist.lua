@@ -6,7 +6,9 @@ ROLE.nameplural = "Communists"
 ROLE.nameext = "a Communist"
 ROLE.nameshort = "com"
 
-ROLE.desc = [[You are {role}!]]
+ROLE.desc = [[You are {role}! Your goal is to
+convert all players to communism
+by using your Communist Manifesto]]
 
 ROLE.team = ROLE_TEAM_INDEPENDENT
 ROLE.loadout = {"weapon_com_manifesto"}
