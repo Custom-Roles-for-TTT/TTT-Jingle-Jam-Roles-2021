@@ -1,0 +1,6 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models\weapons\communist_manifesto\karl_marx"
+	"$surfaceprop" "default"
+        
+}
