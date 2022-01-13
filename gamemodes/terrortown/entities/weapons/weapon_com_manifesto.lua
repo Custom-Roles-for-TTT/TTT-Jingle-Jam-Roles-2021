@@ -16,7 +16,7 @@ if CLIENT then
     };
 
     SWEP.Slot = 8 -- add 1 to get the slot number key
-    SWEP.ViewModelFOV = 54
+    SWEP.ViewModelFOV = 41
     SWEP.ViewModelFlip = false
     SWEP.UseHands = true
 else
