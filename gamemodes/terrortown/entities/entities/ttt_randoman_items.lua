@@ -124,7 +124,7 @@ if SERVER then
 
                     -- Puts the name of the randomat in the description if it is too long
                     if string.len(name) > 35 then
-                        name = string.Left(name, 35)
+                        name = string.Left(name, 32) .. "..."
                         descriptionName = true
                     end
 
