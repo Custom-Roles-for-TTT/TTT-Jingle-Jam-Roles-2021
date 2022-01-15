@@ -47,12 +47,10 @@ if SERVER then
             if IsRandomanItem(id) then
                 local item = GetEquipmentItemById(id)
 
-                for i, event in pairs(Randomat.ActiveEvents) do
-                    if item.eventid == event.id and ply:IsRandoman() then
-                        ply:PrintMessage(HUD_PRINTCENTER, "That's already in effect!")
+                if ply:IsRandoman() and Randomat:IsEventActive(item.eventid) then
+                    ply:PrintMessage(HUD_PRINTCENTER, "That's already in effect!")
 
-                        return false
-                    end
+                    return false
                 end
             end
         end
@@ -107,7 +105,7 @@ if SERVER then
     end)
 
     hook.Add("TTTBeginRound", "UpdateRandomanItems", function()
-        if player.IsRoleLiving(ROLE_RANDOMAN) or playerJoined then
+        if playerJoined or player.IsRoleLiving(ROLE_RANDOMAN) then
             table.Empty(chosenEvents)
             net.Start("UpdateRandomanItems")
 
@@ -126,7 +124,7 @@ if SERVER then
 
                     -- Puts the name of the randomat in the description if it is too long
                     if string.len(name) > 35 then
-                        name = "Randomat"
+                        name = string.Left(name, 35)
                         descriptionName = true
                     end
 

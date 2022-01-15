@@ -27,13 +27,10 @@ ROLE.convars = {
     },
     {
         cvar = "ttt_randoman_prevent_auto_randomat",
-        type = ROLE_CONVAR_TYPE_TEXT
+        type = ROLE_CONVAR_TYPE_BOOL
     }
 }
 
-ROLE.translations = {}
-ROLE.shoulddelayshop = false
-ROLE.moverolestate = nil
 RegisterRole(ROLE)
 
 hook.Add("TTTRandomatShouldAuto", "StopAutoRandomatWithRandoman", function()
