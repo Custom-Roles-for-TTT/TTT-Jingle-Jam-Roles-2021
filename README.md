@@ -27,16 +27,6 @@ ttt_communist_convert_freeze         0    // Whether to freeze a player in place
 ttt_communist_convert_unfreeze_delay 1    // The number of seconds a player will stay frozen after the conversion process is cancelled
 ```
 
-## Taxidermist
-_Suggested By_: Horselover Fat\
-The Taxidermist is a member of the traitor team whose goal is to use their taxidermy kit on a corpse to make it impossible to identify.
-\
-\
-**ConVars**
-```cpp
-ttt_taxidermist_device_time          8    // The number of seconds the taxidermist's device takes to use on a corpse
-```
-
 ## Randoman
 _Suggested By_: The Stig\
 The Randoman is a detective who is able to buy randomat events, rather than detective items.
@@ -46,6 +36,16 @@ The Randoman is a detective who is able to buy randomat events, rather than dete
 ```cpp
 ttt_randoman_banned_randomats        credits,blind,speedrun,blerg,deadchat,lame,choose,randomxn,intensifies,delay,oncemore    // The randomats that are not allowed to appear in the randoman's shop. Separate randomat ids with commas. You can find a randomat's ID by turning one off/on in the randomat ULX menu and coping the word between 'ttt_' and '_enabled' that appears in chat.
 ttt_randoman_prevent_auto_randomat   1    // Prevent auto-randomat triggering if there is a randoman at the start of the round.
+```
+
+## Taxidermist
+_Suggested By_: Horselover Fat\
+The Taxidermist is a member of the traitor team whose goal is to use their taxidermy kit on a corpse to make it impossible to identify.
+\
+\
+**ConVars**
+```cpp
+ttt_taxidermist_device_time          8    // The number of seconds the taxidermist's device takes to use on a corpse
 ```
 
 ## Special Thanks
