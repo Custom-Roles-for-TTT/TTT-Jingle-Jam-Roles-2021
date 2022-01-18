@@ -92,4 +92,54 @@ if SERVER then
         SetGlobalBool("ttt_santa_jesters_are_naughty", GetConVar("ttt_santa_jesters_are_naughty"):GetBool())
         SetGlobalBool("ttt_santa_independents_are_naughty", GetConVar("ttt_santa_independents_are_naughty"):GetBool())
     end)
+
+    -- We don't want Santa to receive items unless random presents is turned on
+    hook.Add("TTTCanOrderEquipment", "Santa_TTTCanOrderEquipment", function(ply, id, is_item)
+        if ply:IsSanta() and not GetGlobalBool("ttt_santa_random_presents", false) then
+            if ply:GetNWString("SantaLoadedItem") == "" then
+                -- TODO: Check that santa is allowed to buy the item before loading it into the christmas cannon
+                ply:SetNWString("SantaLoadedItem", tostring(id))
+                ply:SetNWBool("SantaHasAmmo", false)
+                ply:SetCredits(0)
+                ply:AddBought(id)
+            else
+                ply:PrintMessage(HUD_PRINTTALK, "You have already loaded an item into the christmas cannon!")
+            end
+            return false
+        end
+    end)
+
+    hook.Add("TTTPrepareRound", "Santa_TTTPrepareRound", function()
+        for _, v in pairs(player.GetAll()) do
+            v:SetNWString("SantaLoadedItem", "")
+            v:SetNWBool("SantaHasAmmo", false)
+        end
+    end)
+
+    hook.Add("TTTBeginRound", "Santa_TTTBeginRound", function()
+        for _, v in pairs(player.GetAll()) do
+            if v:IsActiveSanta() then
+                v:SetNWBool("SantaHasAmmo", true)
+            end
+        end
+
+        -- If random presents are disabled we hijack santa's credits to tie them to their ammo
+        if not GetGlobalBool("ttt_santa_random_presents", false) then
+            timer.Create("santacredits", 1, 0, function()
+                for _, v in pairs(player.GetAll()) do
+                    if v:IsActiveSanta() then
+                        if v:GetCredits() ~= 0 and not v:GetNWBool("SantaHasAmmo", false) then
+                            v:SetCredits(0)
+                        elseif v:GetCredits() ~= 1 and v:GetNWBool("SantaHasAmmo", false) then
+                            v:SetCredits(1)
+                        end
+                    end
+                end
+            end)
+        end
+    end)
+
+    hook.Add("TTTEndRound", "Santa_TTTEndRound", function()
+        if timer.Exists("santacredits") then timer.Remove("santacredits") end
+    end)
 end
