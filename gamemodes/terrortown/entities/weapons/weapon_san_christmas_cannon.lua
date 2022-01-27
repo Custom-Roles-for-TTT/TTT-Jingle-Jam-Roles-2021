@@ -13,11 +13,10 @@ SWEP.DrawCrosshair = false
 SWEP.Weight = 5
 
 SWEP.Primary.Automatic = false
-SWEP.Primary.Ammo = "none"
-SWEP.Primary.Delay = 5
+SWEP.Primary.Ammo = ""
+SWEP.Primary.Delay = 1
 SWEP.Primary.Recoil = 50
 SWEP.Primary.Damage = 0
-SWEP.Primary.Automatic = true
 SWEP.Primary.ClipSize = -1
 SWEP.Primary.ClipMax = -1
 SWEP.Primary.DefaultClip = -1
@@ -44,6 +43,7 @@ function SWEP:Initialize()
 end
 
 function SWEP:PrimaryAttack()
+    if not IsFirstTimePredicted() then return end
     self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
     self:SetNextSecondaryFire(CurTime() + self.Primary.Delay)
 
@@ -80,25 +80,30 @@ function SWEP:PrimaryAttack()
             present:SetPos(owner:GetShootPos() + ang:Forward() * 50 + ang:Right() * 1 - ang:Up() * 1)
             present:SetOwner(owner)
             present.item_id = item_id
+            present:Spawn()
+            present:Activate()
             local physobj = present:GetPhysicsObject()
             if IsValid(physobj) then
-                physobj:SetVelocity(owner:GetAimVector() * 750)
+                physobj:SetVelocity(owner:GetAimVector() * 1200)
             end
         end
 
         owner:ViewPunch(Angle(util.SharedRandom(self:GetClass(), -0.2, -0.1, 0) * self.Primary.Recoil, util.SharedRandom(self:GetClass(),  -0.1, 0.1, 1) * self.Primary.Recoil, 0))
     else
-        if has_ammo then
-            owner:PrintMessage(HUD_PRINTTALK, LANG.GetParamTranslation("santa_load_gift", {menukey = Key("+menu_context", "C")}))
+        if SERVER then
+            if has_ammo then
+                owner:PrintMessage(HUD_PRINTTALK, LANG.GetParamTranslation("santa_load_gift", {menukey = Key("+menu_context", "C")}))
+            end
         end
 
-        if CLIENT and LocalPlayer() == self:GetOwner() then
+        if CLIENT and LocalPlayer() == self:GetOwner() and self:CanPrimaryAttack() then
             self:EmitSound( "Weapon_Pistol.Empty" )
         end
     end
 end
 
 function SWEP:SecondaryAttack()
+    if not IsFirstTimePredicted() then return end
     self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
     self:SetNextSecondaryFire(CurTime() + self.Primary.Delay)
 
@@ -124,9 +129,12 @@ function SWEP:SecondaryAttack()
             coal:SetAngles(ang)
             coal:SetPos(owner:GetShootPos() + ang:Forward() * 50 + ang:Right() * 1 - ang:Up() * 1)
             coal:SetOwner(owner)
+            coal:Spawn()
+            coal:Activate()
+            coal:SetColor(Color(128, 128, 128, 255))
             local physobj = coal:GetPhysicsObject()
             if IsValid(physobj) then
-                physobj:SetVelocity(owner:GetAimVector() * 750)
+                physobj:SetVelocity(owner:GetAimVector() * 1200)
             end
         end
 

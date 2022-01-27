@@ -1,6 +1,6 @@
 local ROLE = {}
 
-ROLE.nameraw = "sanda"
+ROLE.nameraw = "santa"
 ROLE.name = "Santa"
 ROLE.nameplural = "Santas"
 ROLE.nameext = "a Santa"
@@ -12,8 +12,10 @@ You can use your christmas cannon to give gifts to nice children and coal to nau
 Press {menukey} to receive your equipment!]]
 
 ROLE.team = ROLE_TEAM_DETECTIVE
+ROLE.shop = {}
 ROLE.loadout = {"weapon_san_christmas_cannon"}
 ROLE.startingcredits = 1
+ROLE.canlootcredits = false
 
 ROLE.convars = {
     {
@@ -78,6 +80,38 @@ if CLIENT then
             return html
         end
     end)
+
+    hook.Add("TTTHUDInfoPaint", "Drunk_TTTHUDInfoPaint", function(client, label_left, label_top)
+        if client:IsSanta() and client:GetActiveWeapon() == "weapon_san_christmas_cannon" then
+            surface.SetFont("TabLarge")
+            surface.SetTextColor(255, 255, 255, 230)
+
+            local text = ""
+            if client:GetNWBool("SantaCannonDisabled", false) then
+                text = "Christmas Cannon: DISABLED"
+            elseif GetGlobalBool("ttt_santa_random_presents", false) then
+                if client:GetNWBool("SantaHasAmmo", false) then
+                    text = "Christmas Cannon: READY"
+                else
+                    text = "Christmas Cannon: UNLOADED"
+                end
+            else
+                if client:GetNWBool("SantaHasAmmo", false) then
+                    if client:GetNWString("SantaLoadedItem", "") == "" then
+                        text = "Christmas Cannon: GIFT UNLOADED - COAL READY"
+                    else
+                        text = "Christmas Cannon: GIFT READY - COAL READY"
+                    end
+                else
+                    text = "Christmas Cannon: GIFT UNLOADED - COAL UNLOADED"
+                end
+            end
+            local _, h = surface.GetTextSize(text)
+
+            surface.SetTextPos(label_left, ScrH() - label_top - h)
+            surface.DrawText(text)
+        end
+    end)
 end
 
 if SERVER then
@@ -86,10 +120,11 @@ if SERVER then
     CreateConVar("ttt_santa_random_presents", 0)
     CreateConVar("ttt_santa_jesters_are_naughty", 0)
     CreateConVar("ttt_santa_independents_are_naughty", 1)
+    CreateConVar("ttt_santa_shop_sync", 1) -- This is generated automatically later but we want it on by default so we create it here first
 
     local plymeta = FindMetaTable("Player")
 
-    function plymeta:TrackSantaGifts(sender)
+    function plymeta:CheckSantaGift(sender)
         if not IsValid(sender) then return false end
 
         if not self.giftsReceived then
@@ -97,7 +132,11 @@ if SERVER then
         end
 
         local sid = sender:SteamID64()
-        if self.giftsReceived[sid] or sid == self:SteamID64() then
+        if self.giftsReceived[sid] then
+            self:PrintMessage(HUD_PRINTTALK, "You have already received a gift from " .. sender:Nick() .. "!")
+            return false
+        elseif sid == self:SteamID64() then
+            self:PrintMessage(HUD_PRINTTALK, "You cannot open a gift from yourself!")
             return false
         else
             self.giftsReceived[sid] = true
@@ -135,6 +174,7 @@ if SERVER then
         for _, v in pairs(player.GetAll()) do
             v:SetNWString("SantaLoadedItem", "")
             v:SetNWBool("SantaHasAmmo", false)
+            v:SetNWBool("SantaCannonDisabled", false)
             v:ResetSantaGifts()
         end
     end)
