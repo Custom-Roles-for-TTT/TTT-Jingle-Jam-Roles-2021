@@ -45,7 +45,7 @@ The Taxidermist is a member of the traitor team whose goal is to use their taxid
 \
 **ConVars**
 ```cpp
-ttt_taxidermist_device_time          8    // The number of seconds the taxidermist's device takes to use on a corpse
+ttt_taxidermist_device_time          5    // The number of seconds the taxidermist's device takes to use on a corpse
 ```
 
 ## Special Thanks

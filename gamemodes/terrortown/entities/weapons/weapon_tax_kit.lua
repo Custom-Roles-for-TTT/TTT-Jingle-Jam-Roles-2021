@@ -67,7 +67,7 @@ local DEFIB_BUSY = 1
 local DEFIB_ERROR = 2
 
 if SERVER then
-    CreateConVar("ttt_taxidermist_device_time", "8")
+    CreateConVar("ttt_taxidermist_device_time", "5")
 end
 
 if CLIENT then
