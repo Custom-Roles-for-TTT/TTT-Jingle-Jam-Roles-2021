@@ -313,7 +313,7 @@ if CLIENT then
             local traitorColor = ROLE_COLORS[ROLE_TRAITOR]
             local html =  "The " .. ROLE_STRINGS[ROLE_BOXER] .. " is a <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>jester</span> role whose goal is to knock out all of the living players."
 
-            html = html .. "<span style='display: block; margin-top: 10px;'>The boxing gloves primary attack has a chance to make targetted players <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>drop their weapon</span>.</span>"
+            html = html .. "<span style='display: block; margin-top: 10px;'>The boxing gloves primary attack has a chance to make targeted players <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>drop their weapon</span>.</span>"
 
             local duration = GetGlobalInt("ttt_boxer_knockout_duration", 10)
             html = html .. "<span style='display: block; margin-top: 10px;'>Using the secondary attack will <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>knock out</span> the players that are hit for " .. duration .. " seconds.</span>"
