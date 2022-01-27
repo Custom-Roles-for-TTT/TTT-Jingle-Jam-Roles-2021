@@ -15,10 +15,6 @@ ROLE.team = ROLE_TEAM_DETECTIVE
 ROLE.loadout = {"weapon_san_christmas_cannon"}
 ROLE.startingcredits = 1
 
-CreateConVar("ttt_santa_random_presents", 0)
-CreateConVar("ttt_santa_jesters_are_naughty", 0)
-CreateConVar("ttt_santa_independents_are_naughty", 1)
-
 ROLE.convars = {
     {
         cvar = "ttt_santa_random_presents",
@@ -87,6 +83,32 @@ end
 if SERVER then
     AddCSLuaFile()
 
+    CreateConVar("ttt_santa_random_presents", 0)
+    CreateConVar("ttt_santa_jesters_are_naughty", 0)
+    CreateConVar("ttt_santa_independents_are_naughty", 1)
+
+    local plymeta = FindMetaTable("Player")
+
+    function plymeta:TrackSantaGifts(sender)
+        if not IsValid(sender) then return false end
+
+        if not self.giftsReceived then
+            self.giftsReceived = {}
+        end
+
+        local sid = sender:SteamID64()
+        if self.giftsReceived[sid] or sid == self:SteamID64() then
+            return false
+        else
+            self.giftsReceived[sid] = true
+            return true
+        end
+    end
+
+    function plymeta:ResetSantaGifts()
+        self.giftsReceived = {}
+    end
+
     hook.Add("TTTSyncGlobals", "Santa_TTTSyncGlobals", function()
         SetGlobalBool("ttt_santa_random_presents", GetConVar("ttt_santa_random_presents"):GetBool())
         SetGlobalBool("ttt_santa_jesters_are_naughty", GetConVar("ttt_santa_jesters_are_naughty"):GetBool())
@@ -97,7 +119,7 @@ if SERVER then
     hook.Add("TTTCanOrderEquipment", "Santa_TTTCanOrderEquipment", function(ply, id, is_item)
         if ply:IsSanta() and not GetGlobalBool("ttt_santa_random_presents", false) then
             if ply:GetNWString("SantaLoadedItem") == "" then
-                -- TODO: Check that santa is allowed to buy the item before loading it into the christmas cannon
+                -- Technically need to check if santa is actually allowed to buy the item here before loading it but this will only matter if people specifically try to break the role with console commands
                 ply:SetNWString("SantaLoadedItem", tostring(id))
                 ply:SetNWBool("SantaHasAmmo", false)
                 ply:SetCredits(0)
@@ -113,6 +135,7 @@ if SERVER then
         for _, v in pairs(player.GetAll()) do
             v:SetNWString("SantaLoadedItem", "")
             v:SetNWBool("SantaHasAmmo", false)
+            v:ResetSantaGifts()
         end
     end)
 
