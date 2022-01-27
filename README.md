@@ -10,13 +10,13 @@ The Boxer is a jester role whose goal is to knock out all of the living players.
 \
 **ConVars**
 ```cpp
-ttt_boxer_drop_chance                0.33 // The percent chance that a player targetted by the boxer's primary attack will drop their current weapon
-ttt_boxer_knockout_duration          10   // The number of a seconds a player targetted by the boxer's secondary attack will be knocked out for
+ttt_boxer_drop_chance                0.33 // The percent chance that a player targeted by the boxer's primary attack will drop their current weapon
+ttt_boxer_knockout_duration          10   // The number of a seconds a player targeted by the boxer's secondary attack will be knocked out for
 ```
 
 ## Communist
 _Suggested By_: Horselover Fat\
-The Communist is an independent role whose goal is to convert all living players to communism using the Commuinist Manifesto.
+The Communist is an independent role whose goal is to convert all living players to communism using the Communist Manifesto.
 \
 \
 **ConVars**
