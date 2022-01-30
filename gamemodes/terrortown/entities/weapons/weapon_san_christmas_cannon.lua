@@ -23,7 +23,7 @@ SWEP.Primary.DefaultClip = -1
 
 SWEP.ViewModelFlip = false
 SWEP.ViewModelFOV = 55
-SWEP.ViewModel = Model("models/weapons/v_rpg.mdl")
+SWEP.ViewModel = Model("models/weapons/v_christmas_cannon.mdl")
 SWEP.WorldModel = Model("models/weapons/w_rocket_launcher.mdl")
 
 SWEP.Kind = WEAPON_ROLE
