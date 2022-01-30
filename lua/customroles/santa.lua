@@ -47,19 +47,19 @@ if CLIENT then
         if role == ROLE_SANTA then
             local roleColor = ROLE_COLORS[ROLE_INNOCENT]
             local detectiveColor = GetRoleTeamColor(ROLE_TEAM_DETECTIVE)
-            local traitorColor = GetRoleTeamColor[ROLE_TEAM_TRAITOR]
-            local jesterColor = GetRoleTeamColor[ROLE_TEAM_JESTER]
-            local independentColor = GetRoleTeamColor[ROLE_TEAM_INDEPENDENT]
+            local traitorColor = ROLE_COLORS[ROLE_TRAITOR]
+            local jesterColor = GetRoleTeamColor(ROLE_TEAM_JESTER)
+            local independentColor = GetRoleTeamColor(ROLE_TEAM_INDEPENDENT)
             local html = ROLE_STRINGS[ROLE_SANTA] .. " is a member of the <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>innocent team</span> whose job is to find and eliminate their enemies."
 
             html = html .. "<span style='display: block; margin-top: 10px;'>Instead of getting a DNA Scanner like a vanilla <span style='color: rgb(" .. detectiveColor.r .. ", " .. detectiveColor.g .. ", " .. detectiveColor.b .. ")'>" .. ROLE_STRINGS[ROLE_DETECTIVE] .. "</span>, they have a christmas cannon.</span>"
 
             -- Gifts
-            html = html .. "<span style='display: block; margin-top: 10px;'>Instead of buying items for themselves, " .. ROLE_STRINGS[ROLE_SANTA] .. " can"
+            html = html .. "<span style='display: block; margin-top: 10px;'>"
             if GetGlobalBool("ttt_santa_random_presents", false) then
-                html = html .. "shoot random shop items"
+                html = html .. ROLE_STRINGS[ROLE_SANTA] .. " can shoot random shop items"
             else
-                html = html .. "buy an item from their shop and shoot it"
+                html = html .. "Instead of buying items for themselves, " .. ROLE_STRINGS[ROLE_SANTA].. " can buy an item from their shop and shoot it"
             end
             html = html .. " from their <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>christmas cannon</span>. Each player can only open one gift.</span>"
 
@@ -81,8 +81,8 @@ if CLIENT then
         end
     end)
 
-    hook.Add("TTTHUDInfoPaint", "Drunk_TTTHUDInfoPaint", function(client, label_left, label_top)
-        if client:IsSanta() and client:GetActiveWeapon() == "weapon_san_christmas_cannon" then
+    hook.Add("TTTHUDInfoPaint", "Santa_TTTHUDInfoPaint", function(client, label_left, label_top)
+        if client:IsSanta() and client:GetActiveWeapon():GetClass() == "weapon_san_christmas_cannon" then
             surface.SetFont("TabLarge")
             surface.SetTextColor(255, 255, 255, 230)
 
@@ -118,8 +118,8 @@ if SERVER then
     AddCSLuaFile()
 
     CreateConVar("ttt_santa_random_presents", 0)
-    CreateConVar("ttt_santa_jesters_are_naughty", 0)
-    CreateConVar("ttt_santa_independents_are_naughty", 1)
+    CreateConVar("ttt_santa_jesters_are_naughty", 1)
+    CreateConVar("ttt_santa_independents_are_naughty", 0)
     CreateConVar("ttt_santa_shop_sync", 1) -- This is generated automatically later but we want it on by default so we create it here first
 
     local plymeta = FindMetaTable("Player")
@@ -142,6 +142,10 @@ if SERVER then
             self.giftsReceived[sid] = true
             return true
         end
+    end
+
+    function plymeta:UndoSantaGift(sender)
+        self.giftsReceived[sender:SteamID64()] = false
     end
 
     function plymeta:ResetSantaGifts()
@@ -204,5 +208,12 @@ if SERVER then
 
     hook.Add("TTTEndRound", "Santa_TTTEndRound", function()
         if timer.Exists("santacredits") then timer.Remove("santacredits") end
+    end)
+    
+    hook.Add("TTTRewardDetectiveTraitorDeath", "Santa_TTTRewardDetectiveTraitorDeath", function(ply, victim, attacker, amount)
+        -- If random presents are disabled santa should not receive credits
+        if not GetGlobalBool("ttt_santa_random_presents", false) and ply:IsActiveSanta() then
+            return true
+        end
     end)
 end

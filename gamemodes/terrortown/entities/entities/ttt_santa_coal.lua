@@ -9,7 +9,7 @@ function ENT:Initialize()
     self:SetSolid(SOLID_VPHYSICS)
     self:SetCollisionGroup(COLLISION_GROUP_PLAYER)  -- Needs to collide with players so it can kill people
     self:SetModelScale(2)
-    self:PhysWake()
+    self:Activate()
     self.antiSpam = CurTime()
 end
 

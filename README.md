@@ -46,8 +46,8 @@ Santa is a detective who is able to give gifts to nice players and coal to naugh
 **ConVars**
 ```cpp
 ttt_santa_random_presents           0   // Whether santa should give random presents instead of being able to choose presents from the shop
-ttt_santa_jesters_are_naughty       0   // Whether jesters are considered to be "naughty" players
-ttt_santa_independents_are_naughty  1   // Whether independents are considered to be "naughty" players
+ttt_santa_jesters_are_naughty       1   // Whether jesters are considered to be "naughty" players
+ttt_santa_independents_are_naughty  0   // Whether independents are considered to be "naughty" players
 ```
 
 ## Taxidermist
@@ -66,3 +66,4 @@ ttt_taxidermist_device_time          8    // The number of seconds the taxidermi
 - [Fyxen](https://steamcommunity.com/profiles/76561198810121546/) for the model, texture, animation, and sound modification for the boxing gloves and communist manifesto weapons
 - [Benconcan](https://freesound.org/people/Benboncan/sounds/66951/) on FreeSound.org for the Boxer's knockout sound
 - [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Soviet_Anthem_Instrumental_1955.ogg) for the copyright-free Soviet Anthem used for the communist manifesto's conversion sound
+- Kathar for the model and texture for the christmas present

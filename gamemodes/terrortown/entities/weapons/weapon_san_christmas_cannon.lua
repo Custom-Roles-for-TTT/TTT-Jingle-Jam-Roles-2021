@@ -63,14 +63,20 @@ function SWEP:PrimaryAttack()
             owner:SetNWBool("SantaHasAmmo", false)
 
             if random_presents then
-                local possibleGifts = {}
+                local tbl = table.Copy(EquipmentItems[ROLE_SANTA]) or {}
                 for _, v in ipairs(weapons.GetList()) do
-                    if v and not v.AutoSpawnable and v.CanBuy and v.AllowDrop then
-                        table.insert(possibleGifts, WEPS.GetClass(v))
+                    if v and not v.AutoSpawnable and v.CanBuy and table.HasValue(v.CanBuy, ROLE_SANTA) then
+                        table.insert(tbl, v)
                     end
                 end
-                local idx = math.random(1, #possibleGifts)
-                item_id = possibleGifts[idx]
+                table.Shuffle(tbl)
+
+                local item = table.Random(tbl)
+                item_id = tonumber(item.id)
+                if not item_id then
+                    item_id = item.ClassName
+                end
+                return item_id
             end
 
             local present = ents.Create("ttt_santa_present")
@@ -81,22 +87,19 @@ function SWEP:PrimaryAttack()
             present:SetOwner(owner)
             present.item_id = item_id
             present:Spawn()
-            present:Activate()
             local physobj = present:GetPhysicsObject()
             if IsValid(physobj) then
-                physobj:SetVelocity(owner:GetAimVector() * 1200)
+                physobj:SetVelocity(owner:GetAimVector() * 1000)
             end
         end
 
         owner:ViewPunch(Angle(util.SharedRandom(self:GetClass(), -0.2, -0.1, 0) * self.Primary.Recoil, util.SharedRandom(self:GetClass(),  -0.1, 0.1, 1) * self.Primary.Recoil, 0))
-    else
-        if SERVER then
-            if has_ammo then
-                owner:PrintMessage(HUD_PRINTTALK, LANG.GetParamTranslation("santa_load_gift", {menukey = Key("+menu_context", "C")}))
-            end
+    elseif CLIENT then
+        if has_ammo then
+            owner:PrintMessage(HUD_PRINTTALK, LANG.GetParamTranslation("santa_load_gift", {menukey = Key("+menu_context", "C")}))
         end
 
-        if CLIENT and LocalPlayer() == self:GetOwner() and self:CanPrimaryAttack() then
+        if LocalPlayer() == self:GetOwner() and self:CanPrimaryAttack() then
             self:EmitSound( "Weapon_Pistol.Empty" )
         end
     end
@@ -130,11 +133,10 @@ function SWEP:SecondaryAttack()
             coal:SetPos(owner:GetShootPos() + ang:Forward() * 50 + ang:Right() * 1 - ang:Up() * 1)
             coal:SetOwner(owner)
             coal:Spawn()
-            coal:Activate()
             coal:SetColor(Color(128, 128, 128, 255))
             local physobj = coal:GetPhysicsObject()
             if IsValid(physobj) then
-                physobj:SetVelocity(owner:GetAimVector() * 1200)
+                physobj:SetVelocity(owner:GetAimVector() * 1500)
             end
         end
 

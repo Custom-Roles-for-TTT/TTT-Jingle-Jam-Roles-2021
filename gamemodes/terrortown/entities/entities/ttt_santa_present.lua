@@ -3,13 +3,12 @@ ENT.Type = "anim"
 ENT.Base = "base_anim"
 
 function ENT:Initialize()
-    self:SetModel("models/props/cs_office/cardboard_box01.mdl") -- TODO: Replace placeholder model
+    self:SetModel("models/katharsmodels/present/type-2/big/present2.mdl")
     self:PhysicsInit(SOLID_VPHYSICS)
     self:SetMoveType(MOVETYPE_VPHYSICS)
     self:SetSolid(SOLID_VPHYSICS)
     self:SetCollisionGroup(COLLISION_GROUP_WEAPON) -- Don't collide with players so presents don't kill people
     self:SetModelScale(1)
-    self:PhysWake()
     self.nextUse = CurTime()
 end
 
@@ -21,18 +20,36 @@ if SERVER then
 
             local owner = self:GetOwner()
             if activator:CheckSantaGift(owner) then
-                if not GetGlobalBool("ttt_santa_random_presents", false) then
-                    owner:SetNWString("SantaLoadedItem", "")
-                    owner:SetCredits(1)
-                end
-
                 local item_id = self.item_id
 
                 local equip_id = tonumber(item_id)
                 if equip_id then
-                    activator:GiveEquipmentItem(equip_id)
+                    if activator:HasEquipmentItem(equip_id) then
+                        activator:PrintMessage(HUD_PRINTTALK, "You already have this item!")
+                        activator:UndoSantaGift(owner)
+                        return
+                    else
+                        activator:GiveEquipmentItem(equip_id)
+                    end
                 else
-                    activator:Give(item_id)
+                    if activator:CanCarryWeapon(weapons.GetStored(item_id)) then
+                        if activator:HasWeapon(item_id) then
+                            activator:PrintMessage(HUD_PRINTTALK, "You already have this item!")
+                            activator:UndoSantaGift(owner)
+                            return
+                        else
+                            activator:Give(item_id)
+                        end
+                    else
+                        activator:PrintMessage(HUD_PRINTTALK, "You are already holding an item that shares a slot with this gift!")
+                        activator:UndoSantaGift(owner)
+                        return
+                    end
+                end
+
+                if not GetGlobalBool("ttt_santa_random_presents", false) then
+                    owner:SetNWString("SantaLoadedItem", "")
+                    owner:SetCredits(1)
                 end
 
                 owner:PrintMessage(HUD_PRINTTALK, activator:Nick() .. " has opened your present and your ammo has been refunded.")
