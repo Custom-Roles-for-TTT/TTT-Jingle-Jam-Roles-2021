@@ -82,7 +82,7 @@ if CLIENT then
     end)
 
     hook.Add("TTTHUDInfoPaint", "Santa_TTTHUDInfoPaint", function(client, label_left, label_top)
-        if client:IsSanta() and client:GetActiveWeapon():GetClass() == "weapon_san_christmas_cannon" then
+        if client:IsSanta() and IsValid(client:GetActiveWeapon()) and client:GetActiveWeapon():GetClass() == "weapon_san_christmas_cannon" then
             surface.SetFont("TabLarge")
             surface.SetTextColor(255, 255, 255, 230)
 
@@ -99,6 +99,8 @@ if CLIENT then
                 if client:GetNWBool("SantaHasAmmo", false) then
                     if client:GetNWString("SantaLoadedItem", "") == "" then
                         text = "Christmas Cannon: GIFT UNLOADED - COAL READY"
+                    elseif client:GetNWString("SantaLoadedItem", "") ~= "" then
+                        text = "Christmas Cannon: GIFT READY - COAL UNLOADED"
                     else
                         text = "Christmas Cannon: GIFT READY - COAL READY"
                     end
@@ -209,11 +211,29 @@ if SERVER then
     hook.Add("TTTEndRound", "Santa_TTTEndRound", function()
         if timer.Exists("santacredits") then timer.Remove("santacredits") end
     end)
-    
+
     hook.Add("TTTRewardDetectiveTraitorDeath", "Santa_TTTRewardDetectiveTraitorDeath", function(ply, victim, attacker, amount)
         -- If random presents are disabled santa should not receive credits
         if not GetGlobalBool("ttt_santa_random_presents", false) and ply:IsActiveSanta() then
             return true
+        end
+    end)
+
+    hook.Add("TTTRewardPlayerKilledAmount", "Santa_TTTRewardPlayerKilledAmount", function(victim, attacker, amount)
+        -- If random presents are disabled santa should not receive credits
+        if not GetGlobalBool("ttt_santa_random_presents", false) and attacker:IsActiveSanta() then
+            return 0
+        end
+    end)
+
+    hook.Add("EntityTakeDamage", "Santa_EntityTakeDamage", function(target, dmg)
+        -- Don't let being hit by a present hurt you
+        local attacker = dmg:GetAttacker()
+        if not IsValid(attacker) then return end
+
+        if attacker:GetClass() == "ttt_santa_present" then
+            dmg:SetDamage(0)
+            dmg:ScaleDamage(0)
         end
     end)
 end

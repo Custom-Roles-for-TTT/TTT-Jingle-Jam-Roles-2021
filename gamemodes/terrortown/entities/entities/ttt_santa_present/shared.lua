@@ -5,11 +5,13 @@ ENT.Base = "base_anim"
 function ENT:Initialize()
     self:SetModel("models/katharsmodels/present/type-2/big/present2.mdl")
     self:PhysicsInit(SOLID_VPHYSICS)
-    self:SetMoveType(MOVETYPE_VPHYSICS)
-    self:SetSolid(SOLID_VPHYSICS)
-    self:SetCollisionGroup(COLLISION_GROUP_WEAPON) -- Don't collide with players so presents don't kill people
-    self:SetModelScale(1)
+    self:Activate()
     self.nextUse = CurTime()
+
+    local phys = self:GetPhysicsObject()
+    if IsValid(phys) then
+        phys:SetMass(10)
+    end
 end
 
 if SERVER then

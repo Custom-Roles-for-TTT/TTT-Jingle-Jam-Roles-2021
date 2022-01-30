@@ -5,9 +5,6 @@ ENT.Base = "base_anim"
 function ENT:Initialize()
     self:SetModel("models/props_phx/misc/potato.mdl")
     self:PhysicsInit(SOLID_VPHYSICS)
-    self:SetMoveType(MOVETYPE_VPHYSICS)
-    self:SetSolid(SOLID_VPHYSICS)
-    self:SetCollisionGroup(COLLISION_GROUP_PLAYER)  -- Needs to collide with players so it can kill people
     self:SetModelScale(2)
     self:Activate()
     self.antiSpam = CurTime()
