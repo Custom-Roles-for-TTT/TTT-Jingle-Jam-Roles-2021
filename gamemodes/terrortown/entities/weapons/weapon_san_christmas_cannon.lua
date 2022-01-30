@@ -76,7 +76,6 @@ function SWEP:PrimaryAttack()
                 if not item_id then
                     item_id = item.ClassName
                 end
-                return item_id
             end
 
             local present = ents.Create("ttt_santa_present")
