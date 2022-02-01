@@ -1,5 +1,5 @@
 "VertexLitGeneric"
 {
-	"$basetexture" "models\weapons\christmas_cannon\rocket_launcher_sheet"
-	"$surfaceprop" "default"
+    "$basetexture" "models\weapons\christmas_cannon\rocket_launcher_sheet"
+    "$surfaceprop" "default"
 }
