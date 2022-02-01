@@ -62,6 +62,7 @@ function SWEP:PrimaryAttack()
             owner:SetNWString("SantaLoadedItem", "")
 
             if random_presents then
+                owner:SetNWBool("SantaHasAmmo", false)
                 local tbl = table.Copy(EquipmentItems[ROLE_SANTA]) or {}
                 for _, v in ipairs(weapons.GetList()) do
                     if v and not v.AutoSpawnable and v.CanBuy and table.HasValue(v.CanBuy, ROLE_SANTA) then
