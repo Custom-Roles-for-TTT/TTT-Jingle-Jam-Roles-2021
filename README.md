@@ -52,5 +52,5 @@ ttt_taxidermist_device_time          5    // The number of seconds the taxidermi
 - [Game icons](https://game-icons.net/) for the role icons
 - [n Beats](https://www.youtube.com/channel/UCqeNgQLxwkV8TqEyxG_q60Q) for the original yelling sound used with the Boxer's flurry of punches ability
 - [Fyxen](https://steamcommunity.com/profiles/76561198810121546/) for the model, texture, and animations for the boxing gloves and communist manifesto, for sound modification for the boxing gloves, and for the model and texture modifications for the christmas cannon
-- [Benconcan](https://freesound.org/people/Benboncan/sounds/66951/) on FreeSound.org for the Boxer's knockout sound
+- [Benboncan](https://freesound.org/people/Benboncan/sounds/66951/) on FreeSound.org for the Boxer's knockout sound
 - [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Soviet_Anthem_Instrumental_1955.ogg) for the copyright-free Soviet Anthem used for the communist manifesto's conversion sound
