@@ -38,6 +38,18 @@ ttt_randoman_banned_randomats        credits,blind,speedrun,blerg,deadchat,lame,
 ttt_randoman_prevent_auto_randomat   1    // Prevent auto-randomat triggering if there is a randoman at the start of the round.
 ```
 
+## Santa
+_Suggested By_: [The Custom Roles for TTT Discord Server](https://discord.gg/BAPZrykC3F) \
+Santa is a detective who is able to give gifts to nice players and coal to naughty players.
+\
+\
+**ConVars**
+```cpp
+ttt_santa_random_presents           0   // Whether santa should give random presents instead of being able to choose presents from the shop
+ttt_santa_jesters_are_naughty       1   // Whether jesters are considered to be "naughty" players
+ttt_santa_independents_are_naughty  0   // Whether independents are considered to be "naughty" players
+```
+
 ## Taxidermist
 _Suggested By_: Horselover Fat\
 The Taxidermist is a member of the traitor team whose goal is to use their taxidermy kit on a corpse to make it impossible to identify.
