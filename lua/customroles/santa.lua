@@ -96,16 +96,18 @@ if CLIENT then
                     text = "Christmas Cannon: UNLOADED"
                 end
             else
-                if client:GetNWBool("SantaHasAmmo", false) then
-                    if client:GetNWString("SantaLoadedItem", "") == "" then
-                        text = "Christmas Cannon: GIFT UNLOADED - COAL READY"
-                    elseif client:GetNWString("SantaLoadedItem", "") ~= "" then
-                        text = "Christmas Cannon: GIFT READY - COAL UNLOADED"
-                    else
-                        text = "Christmas Cannon: GIFT READY - COAL READY"
-                    end
+                text = "Christmas Cannon: GIFT "
+                if client:GetNWString("SantaLoadedItem", "") ~= "" then
+                    text = text .. "READY"
                 else
-                    text = "Christmas Cannon: GIFT UNLOADED - COAL UNLOADED"
+                    text = text .. "UNLOADED"
+                end
+
+                text = text .. " - COAL "
+                if client:GetNWBool("SantaHasAmmo", false) then
+                    text = text .. "READY"
+                else
+                    text = text .. "UNLOADED"
                 end
             end
             local _, h = surface.GetTextSize(text)

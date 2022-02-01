@@ -23,6 +23,8 @@ if SERVER then
         local owner = self:GetOwner()
 
         if not IsValid(ent) or not ent:IsPlayer() or not ent:IsActive() then return end
+        -- Don't let this kill someone if it's just being carried by a magneto stick
+        if IsValid(phys) and phys:HasGameFlag(FVPHYSICS_PLAYER_HELD) then return end
         if data.Speed < 300 then return end -- The coal has to be going fast enough to kill someone
 
         if CurTime() <= self.antiSpam then return end
