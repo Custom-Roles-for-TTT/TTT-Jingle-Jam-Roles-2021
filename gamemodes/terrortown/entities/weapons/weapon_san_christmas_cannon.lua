@@ -24,7 +24,7 @@ SWEP.Primary.DefaultClip = -1
 SWEP.ViewModelFlip = false
 SWEP.ViewModelFOV = 55
 SWEP.ViewModel = Model("models/weapons/v_christmas_cannon.mdl")
-SWEP.WorldModel = Model("models/weapons/w_rocket_launcher.mdl")
+SWEP.WorldModel = Model("models/weapons/w_christmas_cannon.mdl")
 
 SWEP.Kind = WEAPON_ROLE
 SWEP.AutoSpawnable = false
@@ -60,7 +60,6 @@ function SWEP:PrimaryAttack()
 
         if SERVER then
             owner:SetNWString("SantaLoadedItem", "")
-            owner:SetNWBool("SantaHasAmmo", false)
 
             if random_presents then
                 local tbl = table.Copy(EquipmentItems[ROLE_SANTA]) or {}
