@@ -10,7 +10,7 @@ ROLE.team = ROLE_TEAM_DETECTIVE
 ROLE.shop = {}
 ROLE.loadout = {}
 ROLE.startingcredits = 1
-ROLE.selectionpredicate = function() return file.Exists("gamemodes/terrortown/entities/weapons/weapon_ttt_randomat/shared.lua", "GAME") end
+ROLE.selectionpredicate = function() return Randomat and type(Randomat.GetRandomEvent) == "function" end
 
 -- These randomats are banned from showing up in the randoman's shop for various reasons:
 -- The credits, blind, etc. events are too advantageous to the innocents and are banned to prevent them from being picked all the time

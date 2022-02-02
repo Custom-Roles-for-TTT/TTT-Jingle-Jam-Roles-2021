@@ -29,7 +29,8 @@ ttt_communist_convert_unfreeze_delay 1    // The number of seconds a player will
 
 ## Randoman
 _Suggested By_: The Stig\
-The Randoman is a detective who is able to buy randomat events, rather than detective items.
+The Randoman is a detective who is able to buy randomat events, rather than detective items.\
+_Requires [TTT Randomat 2.0 for Custom Roles for TTT](https://steamcommunity.com/sharedfiles/filedetails/?id=2055805086) to be installed._
 \
 \
 **ConVars**
