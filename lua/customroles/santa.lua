@@ -238,4 +238,10 @@ if SERVER then
             dmg:ScaleDamage(0)
         end
     end)
+
+    hook.Add("TTTPlayerRoleChanged", "Santa_TTTPlayerRoleChanged", function(ply, oldRole, newRole)
+        if newRole == ROLE_SANTA and oldRole ~= newRole then
+            ply:SetNWBool("SantaHasAmmo", true)
+        end
+    end)
 end
