@@ -1,5 +1,5 @@
 -- Don't run this if the randomat doesn't exist, the role obviously can't work then
-if not Randomat or type(Randomat.GetRandomEvent) ~= "function" then return end
+if not Randomat or type(Randomat.IsInnocentTeam) ~= "function" then return end
 -- Remove the radar and body armour in the randoman's shop
 table.Empty(EquipmentItems[ROLE_RANDOMAN])
 local initialID = -1
