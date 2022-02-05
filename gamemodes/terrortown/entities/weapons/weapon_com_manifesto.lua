@@ -59,8 +59,8 @@ SWEP.DeploySpeed = animationLengths[ACT_VM_DRAW]
 
 if SERVER then
     CreateConVar("ttt_communist_convert_credits", "1", FCVAR_NONE, "How many credits to award the non-communists when a player is converted", 0, 10)
-    CreateConVar("ttt_communist_convert_freeze", "0", FCVAR_NONE, "Whether to freeze a player in place while they are being converted", 0, 1)
-    CreateConVar("ttt_communist_convert_unfreeze_delay", "1", FCVAR_NONE, "The number of seconds a player will stay frozen after the conversion process is cancelled", 0, 15)
+    CreateConVar("ttt_communist_convert_freeze", "1", FCVAR_NONE, "Whether to freeze a player in place while they are being converted", 0, 1)
+    CreateConVar("ttt_communist_convert_unfreeze_delay", "2", FCVAR_NONE, "The number of seconds a player will stay frozen after the conversion process is cancelled", 0, 15)
     CreateConVar("ttt_communist_convert_time", "5", FCVAR_NONE, "The amount of time it takes the Communist Manifesto to convert a player", 1, 30)
 end
 
