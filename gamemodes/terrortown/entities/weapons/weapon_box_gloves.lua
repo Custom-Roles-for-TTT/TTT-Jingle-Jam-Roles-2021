@@ -81,6 +81,9 @@ function SWEP:PlayPunchAnimation(anim)
 end
 
 function SWEP:DoPunch(owner, onplayerhit)
+    -- Don't let the owner keep punching after they've been knocked out
+    if owner:GetNWBool("BoxerKnockedOut", false) then return end
+
     local spos = owner:GetShootPos()
     local sdest = spos + (owner:GetAimVector() * 70)
     local kmins = Vector(1,1,1) * -10
