@@ -159,10 +159,13 @@ function SWEP:PrimaryAttack()
     self:DoPunch(owner, function(target)
         if SERVER then
             if not IsPlayer(target) then return end
+            if target:GetNWBool("BoxerKnockedOut", false) then return end
 
-            -- Percent chance to drop weapon
-            local chance = GetConVar("ttt_boxer_drop_chance"):GetFloat()
-            if math.random() < chance then
+            -- Try knocking out the player first
+            if math.random() < GetConVar("ttt_boxer_knockout_chance"):GetFloat() then
+                target:BoxerKnockout()
+            -- Otherwise try making them drop their weapon
+            elseif math.random() < GetConVar("ttt_boxer_drop_chance"):GetFloat() then
                 local wep = target:GetActiveWeapon()
                 if not IsValid(wep) or not wep.AllowDrop then return end
 
