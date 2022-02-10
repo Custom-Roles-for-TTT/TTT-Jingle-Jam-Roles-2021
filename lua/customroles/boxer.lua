@@ -27,6 +27,11 @@ table.insert(ROLE.convars, {
     decimal = 2
 })
 table.insert(ROLE.convars, {
+    cvar = "ttt_boxer_knockout_chance",
+    type = ROLE_CONVAR_TYPE_NUM,
+    decimal = 2
+})
+table.insert(ROLE.convars, {
     cvar = "ttt_boxer_knockout_duration",
     type = ROLE_CONVAR_TYPE_NUM,
     decimal = 0
@@ -47,8 +52,9 @@ RegisterRole(ROLE)
 if SERVER then
     AddCSLuaFile()
 
-    CreateConVar("ttt_boxer_drop_chance", "0.33", FCVAR_NONE, "Percent chance a punched player will drop weapon", 0.0, 1.0)
-    local knockout_duration = CreateConVar("ttt_boxer_knockout_duration", "10", FCVAR_NONE, "Time punched player should be knocked down", 1, 60)
+    local drop_chance = CreateConVar("ttt_boxer_drop_chance", "0.33", FCVAR_NONE, "Percent chance a punched player will drop weapon", 0.0, 1.0)
+    local knockout_chance = CreateConVar("ttt_boxer_knockout_chance", "0.33", FCVAR_NONE, "Percent chance a punched player will get knocked out", 0.0, 1.0)
+    local knockout_duration = CreateConVar("ttt_boxer_knockout_duration", "10", FCVAR_NONE, "Time punched player should be knocked out", 1, 60)
 
     local knockout = Sound("knockout.mp3")
     local plymeta = FindMetaTable("Player")
@@ -230,6 +236,8 @@ if SERVER then
     end)
 
     hook.Add("TTTSyncGlobals", "Boxer_TTTSyncGlobals", function()
+        SetGlobalFloat("ttt_boxer_drop_chance", drop_chance:GetFloat())
+        SetGlobalFloat("ttt_boxer_knockout_chance", knockout_chance:GetFloat())
         SetGlobalInt("ttt_boxer_knockout_duration", knockout_duration:GetInt())
     end)
 
@@ -313,7 +321,29 @@ if CLIENT then
             local traitorColor = ROLE_COLORS[ROLE_TRAITOR]
             local html =  "The " .. ROLE_STRINGS[ROLE_BOXER] .. " is a <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>jester</span> role whose goal is to knock out all of the living players."
 
-            html = html .. "<span style='display: block; margin-top: 10px;'>The boxing gloves primary attack has a chance to make targeted players <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>drop their weapon</span>.</span>"
+            local drop_chance = GetGlobalFloat("ttt_boxer_drop_chance", 0.33)
+            local knockout_chance = GetGlobalFloat("ttt_boxer_knockout_chance", 0.33)
+            local canDrop = drop_chance > 0
+            local canKnockout = knockout_chance > 0
+            if canDrop or canKnockout then
+                html = html .. "<span style='display: block; margin-top: 10px;'>The boxing gloves primary attack has a "
+
+                if canDrop then
+                    local chance = math.Round(drop_chance * 100)
+                    html = html .. chance .. "% chance to make targeted players <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>drop their weapon</span>"
+                end
+
+                if canDrop and canKnockout then
+                    html = html .. " and a "
+                end
+
+                if canKnockout then
+                    local chance = math.Round(knockout_chance * 100)
+                    html = html .. chance .. "% chance to <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>knock out</span> targeted players"
+                end
+
+                html = html .. ".</span>"
+            end
 
             local duration = GetGlobalInt("ttt_boxer_knockout_duration", 10)
             html = html .. "<span style='display: block; margin-top: 10px;'>Using the secondary attack will <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>knock out</span> the players that are hit for " .. duration .. " seconds.</span>"
