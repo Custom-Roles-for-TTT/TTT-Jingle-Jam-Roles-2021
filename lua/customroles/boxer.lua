@@ -22,6 +22,11 @@ ROLE.maxhealth = 125
 
 ROLE.convars = {}
 table.insert(ROLE.convars, {
+    cvar = "ttt_boxer_speed_bonus",
+    type = ROLE_CONVAR_TYPE_NUM,
+    decimal = 2
+})
+table.insert(ROLE.convars, {
     cvar = "ttt_boxer_drop_chance",
     type = ROLE_CONVAR_TYPE_NUM,
     decimal = 2
@@ -52,6 +57,7 @@ RegisterRole(ROLE)
 if SERVER then
     AddCSLuaFile()
 
+    local speed_bonus = CreateConVar("ttt_boxer_speed_bonus", "0.35", FCVAR_NONE, "Percent bonus to speed while the boxer has their gloves out", 0.0, 1.0)
     local drop_chance = CreateConVar("ttt_boxer_drop_chance", "0.33", FCVAR_NONE, "Percent chance a punched player will drop weapon", 0.0, 1.0)
     local knockout_chance = CreateConVar("ttt_boxer_knockout_chance", "0.33", FCVAR_NONE, "Percent chance a punched player will get knocked out", 0.0, 1.0)
     local knockout_duration = CreateConVar("ttt_boxer_knockout_duration", "10", FCVAR_NONE, "Time punched player should be knocked out", 1, 60)
@@ -236,6 +242,7 @@ if SERVER then
     end)
 
     hook.Add("TTTSyncGlobals", "Boxer_TTTSyncGlobals", function()
+        SetGlobalFloat("ttt_boxer_speed_bonus", speed_bonus:GetFloat())
         SetGlobalFloat("ttt_boxer_drop_chance", drop_chance:GetFloat())
         SetGlobalFloat("ttt_boxer_knockout_chance", knockout_chance:GetFloat())
         SetGlobalInt("ttt_boxer_knockout_duration", knockout_duration:GetInt())
@@ -347,6 +354,12 @@ if CLIENT then
 
             local duration = GetGlobalInt("ttt_boxer_knockout_duration", 10)
             html = html .. "<span style='display: block; margin-top: 10px;'>Using the secondary attack will <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>knock out</span> the players that are hit for " .. duration .. " seconds.</span>"
+
+            local speed_bonus = GetGlobalFloat("ttt_boxer_speed_bonus", 0.35)
+            if speed_bonus > 0 then
+                local bonus = math.Round(speed_bonus * 100)
+                html = html .. "<span style='display: block; margin-top: 10px;'>The " .. ROLE_STRINGS[ROLE_BOXER] .. " will <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>move " .. bonus .. "% faster</span> while their gloves are out.</span>"
+            end
 
             html = html .. "<span style='display: block; margin-top: 10px;'>If the " .. ROLE_STRINGS[ROLE_BOXER] .. " is the only player remaining or all other players are knocked out then <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>they will win!</span></span>"
 
@@ -466,3 +479,12 @@ if CLIENT then
         end
     end)
 end
+
+-- Boxers move faster when they have their gloves out
+hook.Add("TTTSpeedMultiplier", "Boxer_TTTSpeedMultiplier", function(ply, mults)
+    local wep = ply:GetActiveWeapon()
+    if IsValid(wep) and WEPS.GetClass(wep) == "weapon_box_gloves" then
+        local speed_bonus = 1 + GetGlobalFloat("ttt_boxer_speed_bonus", 0.35)
+        table.insert(mults, speed_bonus)
+    end
+end)
