@@ -404,7 +404,7 @@ if CLIENT then
         if diff <= 0 then return end
 
         local duration = GetGlobalInt("ttt_boxer_knockout_duration", 10)
-        HUD:PaintBar(8, x, y, width, height, colors, 1 - (diff / duration))
+        CRHUD:PaintBar(8, x, y, width, height, colors, 1 - (diff / duration))
         draw.SimpleText("KNOCKED OUT", "KnockedOut", ScrW() / 2, y + 1, COLOR_WHITE, TEXT_ALIGN_CENTER)
     end)
 
