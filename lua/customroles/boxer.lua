@@ -292,15 +292,9 @@ if CLIENT then
         weight = 600
     })
 
-    if not CRVersion("1.4.6") then
-        hook.Add("Initialize", "Boxer_Initialize", function()
-            WIN_BOXER = GenerateNewWinID(ROLE_BOXER)
-        end)
-    else
-        hook.Add("TTTSyncWinIDs", "Boxer_TTTSyncWinIDs", function()
-            WIN_BOXER = WINS_BY_ROLE[ROLE_BOXER]
-        end)
-    end
+    hook.Add("TTTSyncWinIDs", "Boxer_TTTSyncWinIDs", function()
+        WIN_BOXER = WINS_BY_ROLE[ROLE_BOXER]
+    end)
 
     -- Win condition and events
     hook.Add("TTTScoringWinTitle", "Boxer_TTTScoringWinTitle", function(wintype, wintitles, title, secondary_win_role)
