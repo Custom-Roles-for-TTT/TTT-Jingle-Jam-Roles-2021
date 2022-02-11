@@ -14,6 +14,7 @@ ttt_boxer_speed_bonus                0.35 // The percent bonus speed a boxer wil
 ttt_boxer_drop_chance                0.33 // The percent chance that a player targeted by the boxer's primary attack will drop their current weapon
 ttt_boxer_knockout_chance            0.33 // The percent chance that a player targeted by the boxer's primary attack will get knocked out
 ttt_boxer_knockout_duration          10   // The number of a seconds a player targeted by the boxer's secondary attack will be knocked out for
+ttt_boxer_hide_when_active           0    // Whether to hide the boxer from other players once the fight has started (e.g. hide from radar, disable icon over head, etc.)
 ```
 
 ## Communist
@@ -69,4 +70,5 @@ ttt_taxidermist_device_time          5    // The number of seconds the taxidermi
 - [Game icons](https://game-icons.net/) for the role icons
 - Kathar for the model and texture for the christmas present
 - [n Beats](https://www.youtube.com/channel/UCqeNgQLxwkV8TqEyxG_q60Q) for the original yelling sound used with the Boxer's flurry of punches ability
+- [shawshank73](https://freesound.org/people/shawshank73/sounds/119172/) on FreeSound.org for the Boxer's "Fight!" announcement
 - [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Soviet_Anthem_Instrumental_1955.ogg) for the copyright-free Soviet Anthem used for the communist manifesto's conversion sound

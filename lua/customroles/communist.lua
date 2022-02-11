@@ -49,7 +49,12 @@ ROLE.translations = {
 RegisterRole(ROLE)
 
 if CLIENT then
-    local function RegisterEvent()
+    hook.Add("TTTSyncWinIDs", "Communist_TTTSyncWinIDs", function()
+        WIN_COMMUNIST = WINS_BY_ROLE[ROLE_COMMUNIST]
+    end)
+
+    hook.Add("TTTSyncEventIDs", "Communist_TTTSyncEventIDs", function()
+        EVENT_COMMUNISTCONVERTED = EVENTS_BY_ROLE[ROLE_COMMUNIST]
         local convert_icon = Material("icon16/user_go.png")
         local Event = CLSCORE.DeclareEventDisplay
         local PT = LANG.GetParamTranslation
@@ -60,24 +65,7 @@ if CLIENT then
             icon = function(e)
                 return convert_icon, "Converted"
             end})
-    end
-
-    if not CRVersion("1.4.6") then
-        hook.Add("Initialize", "Communist_Initialize", function()
-            WIN_COMMUNIST = GenerateNewWinID(ROLE_COMMUNIST)
-            EVENT_COMMUNISTCONVERTED = GenerateNewEventID(ROLE_COMMUNIST)
-            RegisterEvent()
-        end)
-    else
-        hook.Add("TTTSyncWinIDs", "Communist_TTTSyncWinIDs", function()
-            WIN_COMMUNIST = WINS_BY_ROLE[ROLE_COMMUNIST]
-        end)
-
-        hook.Add("TTTSyncEventIDs", "Communist_TTTSyncEventIDs", function()
-            EVENT_COMMUNISTCONVERTED = EVENTS_BY_ROLE[ROLE_COMMUNIST]
-            RegisterEvent()
-        end)
-    end
+    end)
 
     hook.Add("TTTTutorialRoleText", "Communist_TTTTutorialRoleText", function(role, titleLabel)
         if role == ROLE_COMMUNIST then
@@ -154,6 +142,8 @@ end
 
 if SERVER then
     AddCSLuaFile()
+
+    resource.AddSingleFile("sound/anthem.mp3")
 
     hook.Add("TTTSyncGlobals", "Communist_TTTSyncGlobals", function()
         SetGlobalBool("ttt_communist_convert_freeze", GetConVar("ttt_communist_convert_freeze"):GetBool())
