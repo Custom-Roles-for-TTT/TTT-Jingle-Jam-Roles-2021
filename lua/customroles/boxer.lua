@@ -41,6 +41,10 @@ table.insert(ROLE.convars, {
     type = ROLE_CONVAR_TYPE_NUM,
     decimal = 0
 })
+table.insert(ROLE.convars, {
+    cvar = "ttt_boxer_hide_when_active",
+    type = ROLE_CONVAR_TYPE_BOOL
+})
 
 ROLE.translations = {
     ["english"] = {
@@ -57,13 +61,22 @@ RegisterRole(ROLE)
 if SERVER then
     AddCSLuaFile()
 
+    util.AddNetworkString("TTT_BoxerWinPrevented")
+
+    resource.AddSingleFile("sound/fight.wav")
+    resource.AddSingleFile("sound/knockout.mp3")
+    resource.AddSingleFile("sound/scream.mp3")
+
     local speed_bonus = CreateConVar("ttt_boxer_speed_bonus", "0.35", FCVAR_NONE, "Percent bonus to speed while the boxer has their gloves out", 0.0, 1.0)
     local drop_chance = CreateConVar("ttt_boxer_drop_chance", "0.33", FCVAR_NONE, "Percent chance a punched player will drop weapon", 0.0, 1.0)
     local knockout_chance = CreateConVar("ttt_boxer_knockout_chance", "0.33", FCVAR_NONE, "Percent chance a punched player will get knocked out", 0.0, 1.0)
     local knockout_duration = CreateConVar("ttt_boxer_knockout_duration", "10", FCVAR_NONE, "Time punched player should be knocked out", 1, 60)
+    local hide_when_active = CreateConVar("ttt_boxer_hide_when_active", "0", FCVAR_NONE, "Whether to hide the boxer once the fight has started")
 
     local knockout = Sound("knockout.mp3")
     local plymeta = FindMetaTable("Player")
+
+    local GetAllPlayers = player.GetAll
 
     local function OnRagdollUsed(ragdoll, ply)
         local ragdolledPly = ragdoll:GetNWEntity("BoxerRagdolledPly", nil)
@@ -233,7 +246,8 @@ if SERVER then
     end)
 
     hook.Add("TTTPrepareRound", "Boxer_PrepareRound", function()
-        for _, v in pairs(player.GetAll()) do
+        for _, v in pairs(GetAllPlayers()) do
+            v:SetNWBool("BoxerWinPrevented", false)
             v:SetNWBool("BoxerKnockedOut", false)
             v:SetNWInt("BoxerKnockoutEndTime", -1)
             v:SetNWEntity("BoxerRagdoll", nil)
@@ -246,14 +260,17 @@ if SERVER then
         SetGlobalFloat("ttt_boxer_drop_chance", drop_chance:GetFloat())
         SetGlobalFloat("ttt_boxer_knockout_chance", knockout_chance:GetFloat())
         SetGlobalInt("ttt_boxer_knockout_duration", knockout_duration:GetInt())
+        SetGlobalBool("ttt_boxer_hide_when_active", hide_when_active:GetBool())
     end)
 
-    -- Win condition
+    -- Win conditions
+
+    -- The boxer wins if they are the only ones left alive or conscious
     hook.Add("TTTCheckForWin", "Boxer_CheckForWin", function()
         local boxer_alive = false
         local other_alive = false
         local other_knockedout = true
-        for _, v in ipairs(player.GetAll()) do
+        for _, v in ipairs(GetAllPlayers()) do
             if v:Alive() and v:IsTerror() then
                 if v:IsBoxer() then
                     boxer_alive = true
@@ -271,6 +288,28 @@ if SERVER then
         end
     end)
 
+    local function HandleBoxerWinBlock(win_type)
+        if win_type == WIN_NONE or win_type == WIN_BOXER then return win_type end
+
+        local boxer = player.GetLivingRole(ROLE_BOXER)
+        if not IsPlayer(boxer) then return win_type end
+
+        if not boxer:GetNWBool("BoxerWinPrevented", false) then
+            boxer:SetNWBool("BoxerWinPrevented", true)
+            PrintMessage(HUD_PRINTTALK, "FIGHT!")
+            PrintMessage(HUD_PRINTCENTER, "FIGHT!")
+
+            net.Start("TTT_BoxerWinPrevented")
+            net.WriteEntity(boxer)
+            net.Broadcast()
+        end
+        return WIN_NONE
+    end
+
+    hook.Add("TTTWinCheckBlocks", "Boxer_TTTWinCheckBlocks", function(win_blocks)
+        table.insert(win_blocks, HandleBoxerWinBlock)
+    end)
+
     hook.Add("TTTPrintResultMessage", "Boxer_PrintResultMessage", function(type)
         if type == WIN_BOXER then
             LANG.Msg("win_boxer", { role = string.lower(ROLE_STRINGS[ROLE_BOXER]) })
@@ -283,8 +322,10 @@ end
 if CLIENT then
     local MathCos = math.cos
     local MathSin = math.sin
+    local StringUpper = string.upper
 
     local client
+    local hide_when_active = false
 
     surface.CreateFont("KnockedOut", {
         font = "Trebuchet24",
@@ -294,6 +335,11 @@ if CLIENT then
 
     hook.Add("TTTSyncWinIDs", "Boxer_TTTSyncWinIDs", function()
         WIN_BOXER = WINS_BY_ROLE[ROLE_BOXER]
+    end)
+
+    hook.Add("TTTUpdateRoleState", "Boxer_TTTUpdateRoleState", function()
+        client = LocalPlayer()
+        hide_when_active = GetGlobalBool("ttt_boxer_hide_when_active", false)
     end)
 
     -- Win condition and events
@@ -315,13 +361,62 @@ if CLIENT then
         end
     end)
 
+    -- Show the boxer to other players when they've prevented a win from occurring
+    local function IsBoxerVisible(ply)
+        return IsPlayer(ply) and ply:IsBoxer() and ply:GetNWBool("BoxerWinPrevented", false) and not hide_when_active
+    end
+
+    net.Receive("TTT_BoxerWinPrevented", function()
+        local ent = net.ReadEntity()
+        if not IsPlayer(ent) then return end
+
+        ent:EmitSound("fight.wav")
+    end)
+
+    -- Show the boxer icon if the player is a boxer who should be visible
+    hook.Add("TTTTargetIDPlayerRoleIcon", "Boxer_TTTTargetIDPlayerRoleIcon", function(ply, cli, role, noz, color_role, hideBeggar, showJester, hideBodysnatcher)
+        if IsBoxerVisible(ply) then
+            return ROLE_BOXER, false, ROLE_BOXER
+        end
+    end)
+
+    -- Show the boxer information and color when you look at the player
+    hook.Add("TTTTargetIDPlayerRing", "Boxer_TTTTargetIDPlayerRing", function(ent, cli, ring_visible)
+        if GetRoundState() < ROUND_ACTIVE then return end
+
+        if IsBoxerVisible(ent) then
+            return true, ROLE_COLORS_RADAR[ROLE_BOXER]
+        end
+    end)
+
+    hook.Add("TTTTargetIDPlayerText", "Boxer_TTTTargetIDPlayerText", function(ent, cli, text, col, secondary_text)
+        if GetRoundState() < ROUND_ACTIVE then return end
+
+        if IsBoxerVisible(ent) then
+            return StringUpper(ROLE_STRINGS[ROLE_BOXER]), ROLE_COLORS_RADAR[ROLE_BOXER]
+        end
+    end)
+
+    -- Hide the player from radars if they shouldn't be visible
+    hook.Add("TTTRadarPlayerRender", "Boxer_TTTRadarPlayerRender", function(cli, tgt, color, hidden)
+        if hidden or not tgt.sid64 or #tgt.sid64 == 0 then return end
+
+        local ply = player.GetBySteamID64(tgt.sid64)
+        if not IsPlayer(ply) then return end
+
+        if not IsBoxerVisible(ply) then
+            return color, true
+        end
+    end)
+
     -- Tutorial
     hook.Add("TTTTutorialRoleText", "Boxer_TTTTutorialRoleText", function(role, titleLabel)
         if role == ROLE_BOXER then
-            local roleColor = GetRoleTeamColor(ROLE_TEAM_BOXER)
+            local roleColor = GetRoleTeamColor(ROLE_TEAM_JESTER)
             local traitorColor = ROLE_COLORS[ROLE_TRAITOR]
             local html =  "The " .. ROLE_STRINGS[ROLE_BOXER] .. " is a <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>jester</span> role whose goal is to knock out all of the living players."
 
+            -- Knockout and Weapon Drop chance
             local drop_chance = GetGlobalFloat("ttt_boxer_drop_chance", 0.33)
             local knockout_chance = GetGlobalFloat("ttt_boxer_knockout_chance", 0.33)
             local canDrop = drop_chance > 0
@@ -346,13 +441,23 @@ if CLIENT then
                 html = html .. ".</span>"
             end
 
+            -- Knockout Duration
             local duration = GetGlobalInt("ttt_boxer_knockout_duration", 10)
             html = html .. "<span style='display: block; margin-top: 10px;'>Using the secondary attack will <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>knock out</span> the players that are hit for " .. duration .. " seconds.</span>"
 
+            -- Speed Bonus
             local speed_bonus = GetGlobalFloat("ttt_boxer_speed_bonus", 0.35)
             if speed_bonus > 0 then
                 local bonus = math.Round(speed_bonus * 100)
                 html = html .. "<span style='display: block; margin-top: 10px;'>The " .. ROLE_STRINGS[ROLE_BOXER] .. " will <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>move " .. bonus .. "% faster</span> while their gloves are out.</span>"
+            end
+
+            -- Announce when one team remaininkg
+            html = html .. "<span style='display: block; margin-top: 10px;'>When only one other team remains, a voice will <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>announce the start of the final fight</span>, alerting the other players that the " .. ROLE_STRINGS[ROLE_BOXER] .. " is out there.</span>"
+
+            -- Hide when one team remaining
+            if GetGlobalBool("ttt_clown_hide_when_active", false) then
+                html = html .. "<span style='display: block; margin-top: 10px;'>After the final fight is announced, they are <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>hidden</span> from players who could normally <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>see them through walls</span>.</span>"
             end
 
             html = html .. "<span style='display: block; margin-top: 10px;'>If the " .. ROLE_STRINGS[ROLE_BOXER] .. " is the only player remaining or all other players are knocked out then <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>they will win!</span></span>"
@@ -382,9 +487,6 @@ if CLIENT then
     end
 
     hook.Add("TTTPlayerAliveClientThink", "Boxer_KnockedOut_TTTPlayerAliveClientThink", function(cli, ply)
-        if not client then
-            client = cli
-        end
         local ragdoll = ply:GetNWEntity("BoxerRagdoll", nil)
         if not IsValid(ragdoll) then return end
 
@@ -428,11 +530,7 @@ if CLIENT then
         fill = Color(75, 150, 255, 255)
     }
     hook.Add("HUDPaint", "Boxer_KnockedOut_HUDPaint", function()
-        if not client then
-            client = LocalPlayer()
-        end
-
-        if not client:GetNWBool("BoxerKnockedOut", false) then return end
+        if not IsPlayer(client) or not client:GetNWBool("BoxerKnockedOut", false) then return end
 
         local endTime = client:GetNWInt("BoxerKnockoutEndTime", 0)
         if endTime <= 0 then return end
@@ -448,6 +546,8 @@ if CLIENT then
     -- Show message indicating they can be revived
     local MAX_TRACE_LENGTH = math.sqrt(3) * 2 * 16384
     hook.Add("HUDDrawTargetID", "Boxer_KnockedOut_HUDDrawTargetID", function()
+        if not IsPlayer(client) then return end
+
         local startpos = client:EyePos()
         local endpos = client:GetAimVector()
         endpos:Mul(MAX_TRACE_LENGTH)
@@ -459,7 +559,7 @@ if CLIENT then
             filter = client:GetObserverMode() == OBS_MODE_IN_EYE and { client, client:GetObserverTarget() } or client
         })
         local ent = trace.Entity
-        if (not IsValid(ent)) or ent.NoTarget then return end
+        if not IsValid(ent) or ent.NoTarget then return end
 
         local ragdolledPly = ent:GetNWEntity("BoxerRagdolledPly", nil)
         if not IsPlayer(ragdolledPly) then return end
@@ -469,6 +569,11 @@ if CLIENT then
 
     hook.Add("TTTTargetIDEntityHintLabel", "Boxer_KnockedOut_TTTTargetIDEntityHintLabel", function(ent, cli, text, col)
         if text == "box_revive_placeholder" then
+            local ply = ent:GetNWEntity("BoxerRagdolledPly", nil)
+            -- Don't show this label and a knocked out player looks at themselves
+            if IsPlayer(ply) and ply == cli then
+                return ""
+            end
             return LANG.GetParamTranslation("box_revive", { usekey = Key("+use", "E") } ), COLOR_WHITE
         end
     end)
