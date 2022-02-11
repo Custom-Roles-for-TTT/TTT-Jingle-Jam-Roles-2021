@@ -78,7 +78,7 @@ function SWEP:PrimaryAttack()
                 local item = table.Random(tbl)
                 item_id = tonumber(item.id)
                 if not item_id then
-                    item_id = item.ClassName
+                    item_id = WEPS.GetClass(item)
                 end
             end
 
