@@ -68,7 +68,9 @@ function SWEP:PrimaryAttack()
             if random_presents then
                 owner:SetNWBool("SantaHasAmmo", false)
                 local tbl = table.Copy(EquipmentItems[ROLE_SANTA]) or {}
+                local sync_detective_weapons = GetGlobalBool("ttt_santa_shop_sync", false)
                 for _, v in ipairs(weapons.GetList()) do
+                    WEPS.HandleCanBuyOverrides(v, ROLE_SANTA, false, false, sync_detective_weapons, false)
                     if v and not v.AutoSpawnable and v.CanBuy and table.HasValue(v.CanBuy, ROLE_SANTA) then
                         table.insert(tbl, v)
                     end
