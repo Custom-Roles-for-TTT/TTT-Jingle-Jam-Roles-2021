@@ -68,7 +68,6 @@ if SERVER then
                 else
                     local has = activator:HasWeapon(item_id)
                     local can_carry = activator:CanCarryWeapon(weapons.GetStored(item_id))
-                    print(activator:Nick() .. " can carry " .. item_id .. "? " .. tostring(can_carry))
                     NotifyPlayer(activator, item_id, has, can_carry)
                     if has or not can_carry then
                         activator:UndoSantaGift(owner)
