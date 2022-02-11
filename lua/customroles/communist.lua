@@ -143,6 +143,8 @@ end
 if SERVER then
     AddCSLuaFile()
 
+    resource.AddSingleFile("sound/anthem.mp3")
+
     hook.Add("TTTSyncGlobals", "Communist_TTTSyncGlobals", function()
         SetGlobalBool("ttt_communist_convert_freeze", GetConVar("ttt_communist_convert_freeze"):GetBool())
         SetGlobalInt("ttt_communist_convert_credits", GetConVar("ttt_communist_convert_credits"):GetInt())
