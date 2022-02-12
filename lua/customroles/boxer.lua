@@ -399,12 +399,19 @@ if CLIENT then
 
     -- Hide the player from radars if they shouldn't be visible
     hook.Add("TTTRadarPlayerRender", "Boxer_TTTRadarPlayerRender", function(cli, tgt, color, hidden)
-        if hidden or not tgt.sid64 or #tgt.sid64 == 0 then return end
+        -- Don't bother running this if the boxer is never hidden
+        if not hide_when_active then return end
+        -- Or if something else is already hiding the radar point
+        if hidden then return end
+        -- Or if this radar point doesn't represent a player
+        if not tgt.sid64 or #tgt.sid64 == 0 then return end
 
         local ply = player.GetBySteamID64(tgt.sid64)
-        if not IsPlayer(ply) then return end
+        -- Make sure this player exists and is a boxer
+        if not IsPlayer(ply) or not ply:IsBoxer() then return end
 
-        if not IsBoxerVisible(ply) then
+        -- If the "FIGHT" announcement has happened then hide the boxer from radar
+        if ply:GetNWBool("BoxerWinPrevented", false) then
             return color, true
         end
     end)
