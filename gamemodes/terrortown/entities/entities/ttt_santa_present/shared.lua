@@ -22,7 +22,12 @@ if SERVER then
         ply:AddBought(id)
 
         net.Start("TTT_BoughtItem")
-        net.WriteBit(isequip)
+        -- Not a boolean so we can't write it directly
+        if isequip then
+            net.WriteBit(true)
+        else
+            net.WriteBit(false)
+        end
         if isequip then
             local bits = 16
             -- Only use 32 bits if the number of equipment items we have requires it
@@ -63,7 +68,7 @@ if SERVER then
                         return
                     else
                         activator:GiveEquipmentItem(equip_id)
-                        CallShopHooks(equip_id, item_id, activator)
+                        CallShopHooks(equip_id, equip_id, activator)
                     end
                 else
                     local has = activator:HasWeapon(item_id)
@@ -74,7 +79,7 @@ if SERVER then
                         return
                     else
                         activator:Give(item_id)
-                        CallShopHooks(equip_id, item_id, activator)
+                        CallShopHooks(nil, item_id, activator)
                     end
                 end
 
@@ -94,7 +99,7 @@ end
 if CLIENT then
     local function GetItemName(item)
         local id = tonumber(item)
-        local info = GetEquipmentItem(ROLE_SANTA, id)
+        local info = GetEquipmentItemById(id)
         return info and LANG.TryTranslation(info.name) or item
     end
 
