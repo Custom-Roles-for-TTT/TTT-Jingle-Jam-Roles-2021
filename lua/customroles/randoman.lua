@@ -18,7 +18,7 @@ CreateConVar("ttt_randoman_banned_randomats", "credits,lame", {FCVAR_NOTIFY}, "E
 
 CreateConVar("ttt_randoman_prevent_auto_randomat", 1, {FCVAR_NOTIFY}, "Prevent auto-randomat triggering if there is a randoman at the start of the round", 0, 1)
 
-CreateConVar("ttt_randoman_guaranteed_randomat_categories", "biased,fun", {FCVAR_NOTIFY}, "At least one randomat from each of these categories will always be in the randoman's shop")
+CreateConVar("ttt_randoman_guaranteed_randomat_categories", "biased,fun", {FCVAR_NOTIFY}, "At least one randomat from each of these categories will always be in the randoman's shop. You can find a randomat's category by looking at an event in the randomat ULX menu.")
 
 ROLE.convars = {
     {
