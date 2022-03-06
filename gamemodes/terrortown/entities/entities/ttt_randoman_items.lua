@@ -125,7 +125,7 @@ if SERVER then
 
                     if randomanItemCount <= garunteedItemCount then
                         local category = garunteedEventCategories[randomanItemCount]
-                        local events = Randomat:GetEventsByCategory(category)
+                        local events = eventsByCategory[category]
                         table.Shuffle(events)
 
                         for _, categoryEvent in ipairs(events) do
