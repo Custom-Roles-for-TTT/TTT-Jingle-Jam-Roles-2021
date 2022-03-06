@@ -14,7 +14,7 @@ ROLE.selectionpredicate = function() return Randomat and type(Randomat.IsInnocen
 
 -- The credits event would break the role and cause a bit too much chaos
 -- Lame is pointless to have in the shop as it itself does nothing
-CreateConVar("ttt_randoman_banned_randomats", "credits,lame", {FCVAR_NOTIFY}, "Events not allowed in the randoman's shop, separate ids with commas. You can find an ID by turning a randomat on/off in the randomat ULX menu and coping the word between 'ttt_' and '_enabled' that appears in chat.")
+CreateConVar("ttt_randoman_banned_randomats", "credits,lame", {FCVAR_NOTIFY}, "Events not allowed in the randoman's shop, separate ids with commas. You can find an ID by turning a randomat on/off in the randomat ULX menu and copying the word after 'ttt_randomat_', which appears in chat.")
 
 CreateConVar("ttt_randoman_prevent_auto_randomat", 1, {FCVAR_NOTIFY}, "Prevent auto-randomat triggering if there is a randoman at the start of the round", 0, 1)
 
