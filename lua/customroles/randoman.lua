@@ -18,6 +18,8 @@ CreateConVar("ttt_randoman_banned_randomats", "credits,lame", {FCVAR_NOTIFY}, "E
 
 CreateConVar("ttt_randoman_prevent_auto_randomat", 1, {FCVAR_NOTIFY}, "Prevent auto-randomat triggering if there is a randoman at the start of the round", 0, 1)
 
+CreateConVar("ttt_randoman_guaranteed_randomat_categories", "biased,fun", {FCVAR_NOTIFY}, "At least one randomat from each of these categories will always be in the randoman's shop")
+
 ROLE.convars = {
     {
         cvar = "ttt_randoman_banned_randomats",
@@ -26,6 +28,10 @@ ROLE.convars = {
     {
         cvar = "ttt_randoman_prevent_auto_randomat",
         type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_randoman_guaranteed_randomat_categories",
+        type = ROLE_CONVAR_TYPE_TEXT
     }
 }
 
