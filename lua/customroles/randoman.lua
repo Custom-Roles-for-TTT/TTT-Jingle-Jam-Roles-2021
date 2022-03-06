@@ -37,8 +37,14 @@ ROLE.convars = {
 
 RegisterRole(ROLE)
 
+-- Prevents auto-randomat triggering if there is a Randoman alive
 hook.Add("TTTRandomatShouldAuto", "StopAutoRandomatWithRandoman", function()
     if GetConVar("ttt_randoman_prevent_auto_randomat"):GetBool() and player.IsRoleLiving(ROLE_RANDOMAN) then return false end
+end)
+
+-- Prevents a randomat from ever triggering at all, while there is a Randoman alive during the round
+hook.Add("TTTRandomatCanEventRun", "HardBanRandomanEvents", function(event)
+    if event == "credits" and player.IsRoleLiving(ROLE_RANDOMAN) then return false end
 end)
 
 if CLIENT then
