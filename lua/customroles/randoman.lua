@@ -12,11 +12,9 @@ ROLE.loadout = {}
 ROLE.startingcredits = 1
 ROLE.selectionpredicate = function() return Randomat and type(Randomat.IsInnocentTeam) == "function" end
 
--- These randomats are banned from showing up in the randoman's shop for various reasons:
--- The credits, blind, etc. events are too advantageous to the innocents and are banned to prevent them from being picked all the time
--- lame is pointless to have in the shop as it itself does nothing
--- The choose, randomxn, etc. events trigger other events, potentially a banned one, so they themselves are banned
-CreateConVar("ttt_randoman_banned_randomats", "credits,blind,speedrun,blerg,deadchat,lame,choose,randomxn,intensifies,delay,oncemore", {FCVAR_NOTIFY}, "The randomats that are not allowed to appear in the randoman's shop. Separate randomat ids with commas. You can find a randomat's ID by turning one off/on in the randomat ULX menu and coping the word between 'ttt_' and '_enabled' that appears in chat.")
+-- The credits event would break the role and cause a bit too much chaos
+-- Lame is pointless to have in the shop as it itself does nothing
+CreateConVar("ttt_randoman_banned_randomats", "credits,lame", {FCVAR_NOTIFY}, "Events not allowed in the randoman's shop, separate ids with commas. You can find an ID by turning a randomat on/off in the randomat ULX menu and coping the word between 'ttt_' and '_enabled' that appears in chat.")
 
 CreateConVar("ttt_randoman_prevent_auto_randomat", 1, {FCVAR_NOTIFY}, "Prevent auto-randomat triggering if there is a randoman at the start of the round", 0, 1)
 
