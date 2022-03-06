@@ -129,7 +129,7 @@ if SERVER then
                         table.Shuffle(events)
 
                         for _, categoryEvent in ipairs(events) do
-                            if IsEventAllowed(categoryEvent) then
+                            if IsEventAllowed(categoryEvent) and Randomat:CanEventRun(categoryEvent, true) then
                                 event = categoryEvent
                                 break
                             end
