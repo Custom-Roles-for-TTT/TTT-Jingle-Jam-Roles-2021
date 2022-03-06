@@ -5,6 +5,11 @@ table.Empty(EquipmentItems[ROLE_RANDOMAN])
 local initialID = -1
 local finalID = -1
 local itemTotal = 15
+local eventsByCategory = {}
+
+for _, category in ipairs(Randomat:GetAllEventCategories()) do
+    eventsByCategory[category] = Randomat:GetEventsByCategory(category)
+end
 
 -- Creating dummy passive shop items for now, on server and client.
 for i = 1, itemTotal do
@@ -107,12 +112,34 @@ if SERVER then
     hook.Add("TTTBeginRound", "UpdateRandomanItems", function()
         if playerJoined or player.IsRoleLiving(ROLE_RANDOMAN) then
             table.Empty(chosenEvents)
+            local garunteedEventCategories = string.Explode(",", GetConVar("ttt_randoman_guaranteed_randomat_categories"):GetString())
+            local garunteedItemCount = #garunteedEventCategories
+            local randomanItemCount = 0
             net.Start("UpdateRandomanItems")
 
-            for i, item in ipairs(EquipmentItems[ROLE_RANDOMAN]) do
+            for _, item in ipairs(EquipmentItems[ROLE_RANDOMAN]) do
                 -- Check that it is using one of the IDs used by a randoman item
                 if IsRandomanItem(item.id) then
-                    local event = Randomat:GetRandomEvent(true, IsEventAllowed)
+                    randomanItemCount = randomanItemCount + 1
+                    local event
+
+                    if randomanItemCount <= garunteedItemCount then
+                        local category = garunteedEventCategories[randomanItemCount]
+                        local events = Randomat:GetEventsByCategory(category)
+                        table.Shuffle(events)
+
+                        for _, categoryEvent in ipairs(events) do
+                            if IsEventAllowed(categoryEvent) then
+                                event = categoryEvent
+                                break
+                            end
+                        end
+                    end
+
+                    if not event then
+                        event = Randomat:GetRandomEvent(true, IsEventAllowed)
+                    end
+
                     table.insert(chosenEvents, event.id)
                     -- Update randomat ID
                     item.eventid = event.id
