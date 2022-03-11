@@ -122,9 +122,10 @@ if SERVER then
                 if IsRandomanItem(item.id) then
                     randomanItemCount = randomanItemCount + 1
                     local event
+                    local category
 
                     if randomanItemCount <= garunteedItemCount then
-                        local category = garunteedEventCategories[randomanItemCount]
+                        category = garunteedEventCategories[randomanItemCount]
                         local events = eventsByCategory[category]
                         table.Shuffle(events)
 
@@ -140,7 +141,7 @@ if SERVER then
 
                     if not event then
                         event = Randomat:GetRandomEvent(true, IsEventAllowed)
-                        local category = "moderateimpact"
+                        category = "moderateimpact"
 
                         if istable(event.Categories) and not table.IsEmpty(event.Categories) then
                             category = event.Categories[1]
@@ -177,6 +178,7 @@ if SERVER then
                         end
                     end
 
+                    description = "Category: " .. category .. "\n\n" .. description
                     item.desc = description
                     net.WriteString(description)
                 end
