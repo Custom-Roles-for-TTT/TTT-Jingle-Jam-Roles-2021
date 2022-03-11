@@ -5,11 +5,6 @@ table.Empty(EquipmentItems[ROLE_RANDOMAN])
 local initialID = -1
 local finalID = -1
 local itemTotal = 15
-local eventsByCategory = {}
-
-for _, category in ipairs(Randomat:GetAllEventCategories()) do
-    eventsByCategory[category] = Randomat:GetEventsByCategory(category)
-end
 
 -- Creating dummy passive shop items for now, on server and client.
 for i = 1, itemTotal do
@@ -43,6 +38,11 @@ end
 if SERVER then
     AddCSLuaFile()
     util.AddNetworkString("UpdateRandomanItems")
+    local eventsByCategory = {}
+
+    for _, category in ipairs(Randomat:GetAllEventCategories()) do
+        eventsByCategory[category] = Randomat:GetEventsByCategory(category)
+    end
 
     -- Prevent multiple of the same randomats from triggering
     hook.Add("TTTCanOrderEquipment", "RandomanCheckRepeatItem", function(ply, id, is_item)
@@ -131,6 +131,8 @@ if SERVER then
                         for _, categoryEvent in ipairs(events) do
                             if IsEventAllowed(categoryEvent) and Randomat:CanEventRun(categoryEvent, true) then
                                 event = categoryEvent
+                                item.material = "vgui/ttt/roles/ran/items/" .. category .. ".png"
+                                net.WriteString(category)
                                 break
                             end
                         end
@@ -138,6 +140,13 @@ if SERVER then
 
                     if not event then
                         event = Randomat:GetRandomEvent(true, IsEventAllowed)
+                        local category = "moderateimpact"
+
+                        if istable(event.Categories) and not table.IsEmpty(event.Categories) then
+                            category = event.Categories[1]
+                        end
+
+                        net.WriteString(category)
                     end
 
                     table.insert(chosenEvents, event.id)
@@ -202,6 +211,7 @@ if CLIENT then
         for i, item in ipairs(EquipmentItems[ROLE_RANDOMAN]) do
             -- Check that it is using one of the IDs used by a randoman item
             if IsRandomanItem(item.id) then
+                item.material = "vgui/ttt/roles/ran/items/" .. net.ReadString() .. ".png"
                 item.eventid = net.ReadString()
                 item.name = net.ReadString()
                 item.desc = net.ReadString()
