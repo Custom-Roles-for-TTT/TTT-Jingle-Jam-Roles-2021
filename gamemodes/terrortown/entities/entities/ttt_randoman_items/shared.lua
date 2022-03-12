@@ -35,14 +35,6 @@ local function IsRandomanItem(id)
     return id >= initialID and id <= finalID
 end
 
-hook.Add("TTTPrepareRound", "RandomanRemoveCustomItemMarkers", function()
-    for _, equipment in ipairs(EquipmentItems[ROLE_RANDOMAN]) do
-        if equipment.id and IsRandomanItem(equipment.id) then
-            table.insert(DefaultEquipment[ROLE_RANDOMAN], equipment)
-        end
-    end
-end)
-
 if SERVER then
     AddCSLuaFile()
     util.AddNetworkString("UpdateRandomanItems")
