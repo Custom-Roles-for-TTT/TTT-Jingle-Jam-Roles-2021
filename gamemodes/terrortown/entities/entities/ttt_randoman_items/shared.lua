@@ -6,6 +6,10 @@ local initialID = -1
 local finalID = -1
 local itemTotal = 15
 
+if not istable(DefaultEquipment[ROLE_RANDOMAN]) then
+    DefaultEquipment[ROLE_RANDOMAN] = {}
+end
+
 -- Creating dummy passive shop items for now, on server and client.
 for i = 1, itemTotal do
     local itemID = GenerateNewEquipmentID and GenerateNewEquipmentID() or 8
@@ -29,6 +33,7 @@ for i = 1, itemTotal do
     }
 
     table.insert(EquipmentItems[ROLE_RANDOMAN], randomanItem)
+    table.insert(DefaultEquipment[ROLE_RANDOMAN], itemID)
 end
 
 local function IsRandomanItem(id)
