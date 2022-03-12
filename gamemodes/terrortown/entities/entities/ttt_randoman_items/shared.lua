@@ -124,11 +124,13 @@ if SERVER then
                     local event
                     local category
 
+                    -- First put all guaranteed events in
                     if randomanItemCount <= garunteedItemCount then
                         category = garunteedEventCategories[randomanItemCount]
                         local events = eventsByCategory[category]
                         table.Shuffle(events)
 
+                        -- Find a random event in that category that is allowed to run
                         for _, categoryEvent in ipairs(events) do
                             if IsEventAllowed(categoryEvent) and Randomat:CanEventRun(categoryEvent, true) then
                                 event = categoryEvent
@@ -139,6 +141,8 @@ if SERVER then
                         end
                     end
 
+                    -- If no events of that category are allowed to run,
+                    -- or we're done with guranteed events, find a complete random one
                     if not event then
                         event = Randomat:GetRandomEvent(true, IsEventAllowed)
                         category = "moderateimpact"
@@ -178,7 +182,9 @@ if SERVER then
                         end
                     end
 
-                    description = "Category: " .. category .. "\n\n" .. description
+                    -- Add event's category to its description 
+                    -- There is garunteed to be one, as moderateimpact is the fallback category for an event without one
+                    description = "Category: " .. Randomat:GetReadableCategory(category) .. "\n\n" .. description
                     item.desc = description
                     net.WriteString(description)
                 end
