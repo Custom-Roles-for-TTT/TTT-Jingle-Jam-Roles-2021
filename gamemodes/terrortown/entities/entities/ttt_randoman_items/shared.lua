@@ -117,8 +117,8 @@ if SERVER then
     hook.Add("TTTBeginRound", "UpdateRandomanItems", function()
         if playerJoined or player.IsRoleLiving(ROLE_RANDOMAN) then
             table.Empty(chosenEvents)
-            local garunteedEventCategories = string.Explode(",", GetConVar("ttt_randoman_guaranteed_randomat_categories"):GetString())
-            local garunteedItemCount = #garunteedEventCategories
+            local guaranteedEventCategories = string.Explode(",", GetConVar("ttt_randoman_guaranteed_randomat_categories"):GetString())
+            local guaranteedItemCount = #guaranteedEventCategories
             local randomanItemCount = 0
             net.Start("UpdateRandomanItems")
 
@@ -130,8 +130,8 @@ if SERVER then
                     local category
 
                     -- First put all guaranteed events in
-                    if randomanItemCount <= garunteedItemCount then
-                        category = garunteedEventCategories[randomanItemCount]
+                    if randomanItemCount <= guaranteedItemCount then
+                        category = guaranteedEventCategories[randomanItemCount]
                         local events = eventsByCategory[category]
                         table.Shuffle(events)
 
@@ -147,7 +147,7 @@ if SERVER then
                     end
 
                     -- If no events of that category are allowed to run,
-                    -- or we're done with guranteed events, find a complete random one
+                    -- or we're done with guaranteed events, find a complete random one
                     if not event then
                         event = Randomat:GetRandomEvent(true, IsEventAllowed)
                         category = "moderateimpact"
@@ -188,7 +188,7 @@ if SERVER then
                     end
 
                     -- Add event's category to its description 
-                    -- There is garunteed to be one, as moderateimpact is the fallback category for an event without one
+                    -- There is guaranteed to be one, as moderate impact is the fallback category for an event without one
                     description = "Category: " .. Randomat:GetReadableCategory(category) .. "\n\n" .. description
                     item.desc = description
                     net.WriteString(description)
