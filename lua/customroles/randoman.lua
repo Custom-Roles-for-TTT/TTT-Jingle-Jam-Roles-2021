@@ -12,13 +12,13 @@ ROLE.loadout = {}
 ROLE.startingcredits = 1
 ROLE.selectionpredicate = function() return Randomat and type(Randomat.IsInnocentTeam) == "function" end
 
--- These randomats are banned from showing up in the randoman's shop for various reasons:
--- The credits, blind, etc. events are too advantageous to the innocents and are banned to prevent them from being picked all the time
--- lame is pointless to have in the shop as it itself does nothing
--- The choose, randomxn, etc. events trigger other events, potentially a banned one, so they themselves are banned
-CreateConVar("ttt_randoman_banned_randomats", "credits,blind,speedrun,blerg,deadchat,lame,choose,randomxn,intensifies,delay,oncemore", {FCVAR_NOTIFY}, "The randomats that are not allowed to appear in the randoman's shop. Separate randomat ids with commas. You can find a randomat's ID by turning one off/on in the randomat ULX menu and coping the word between 'ttt_' and '_enabled' that appears in chat.")
+-- The credits event would break the role and cause a bit too much chaos
+-- Lame is pointless to have in the shop as it itself does nothing
+CreateConVar("ttt_randoman_banned_randomats", "credits,lame", {FCVAR_NOTIFY}, "Events not allowed in the randoman's shop, separate ids with commas. You can find an ID by turning a randomat on/off in the randomat ULX menu and copying the word after 'ttt_randomat_', which appears in chat.")
 
 CreateConVar("ttt_randoman_prevent_auto_randomat", 1, {FCVAR_NOTIFY}, "Prevent auto-randomat triggering if there is a randoman at the start of the round", 0, 1)
+
+CreateConVar("ttt_randoman_guaranteed_randomat_categories", "biased_innocent,fun,moderateimpact", {FCVAR_NOTIFY}, "At least one randomat from each of these categories will always be in the randoman's shop. You can find a randomat's category by looking at an event in the randomat ULX menu.")
 
 ROLE.convars = {
     {
@@ -28,13 +28,27 @@ ROLE.convars = {
     {
         cvar = "ttt_randoman_prevent_auto_randomat",
         type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_randoman_guaranteed_randomat_categories",
+        type = ROLE_CONVAR_TYPE_TEXT
     }
 }
 
 RegisterRole(ROLE)
 
+-- Prevents auto-randomat triggering if there is a Randoman alive
 hook.Add("TTTRandomatShouldAuto", "StopAutoRandomatWithRandoman", function()
     if GetConVar("ttt_randoman_prevent_auto_randomat"):GetBool() and player.IsRoleLiving(ROLE_RANDOMAN) then return false end
+end)
+
+-- Prevents a randomat from ever triggering at all, while there is a Randoman alive during the round
+hook.Add("TTTRandomatCanEventRun", "HardBanRandomanEvents", function(event)
+    if event.id == "credits" then
+        for _, ply in ipairs(player.GetAll()) do
+            if ply:GetRole() == ROLE_RANDOMAN then return false end
+        end
+    end
 end)
 
 if CLIENT then
