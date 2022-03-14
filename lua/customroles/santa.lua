@@ -248,8 +248,8 @@ if SERVER then
     hook.Add("TTTRandomatCanEventRun", "Santa_TTTRandomatCanEventRun", function(event)
         if event.Id ~= "blackmarket" then return end
 
-        for _, v in ipairs(Randomat:GetPlayers(false, true)) do
-            if v:IsSanta() then
+        for _, ply in ipairs(player.GetAll()) do
+            if ply:IsSanta() then
                 return false, "There is " .. ROLE_STRINGS_EXT[ROLE_SANTA] .. " in the round and this event makes their cannon unusable"
             end
         end

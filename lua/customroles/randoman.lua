@@ -37,19 +37,23 @@ ROLE.convars = {
 
 RegisterRole(ROLE)
 
--- Prevents auto-randomat triggering if there is a Randoman alive
-hook.Add("TTTRandomatShouldAuto", "StopAutoRandomatWithRandoman", function()
-    if GetConVar("ttt_randoman_prevent_auto_randomat"):GetBool() and player.IsRoleLiving(ROLE_RANDOMAN) then return false end
-end)
+if SERVER then
+    -- Prevents auto-randomat triggering if there is a Randoman alive
+    hook.Add("TTTRandomatShouldAuto", "StopAutoRandomatWithRandoman", function()
+        if GetConVar("ttt_randoman_prevent_auto_randomat"):GetBool() and player.IsRoleLiving(ROLE_RANDOMAN) then return false end
+    end)
 
--- Prevents a randomat from ever triggering at all, while there is a Randoman alive during the round
-hook.Add("TTTRandomatCanEventRun", "HardBanRandomanEvents", function(event)
-    if event.id == "credits" then
+    -- Prevents a randomat from ever triggering if there is a Randoman in the round
+    hook.Add("TTTRandomatCanEventRun", "HardBanRandomanEvents", function(event)
+        if event.Id ~= "credits" then return end
+
         for _, ply in ipairs(player.GetAll()) do
-            if ply:GetRole() == ROLE_RANDOMAN then return false end
+            if ply:IsRandoman() then
+                return false, "There is " .. ROLE_STRINGS_EXT[ROLE_RANDOMAN] .. " in the round and this event makes their role overpowered"
+            end
         end
-    end
-end)
+    end)
+end
 
 if CLIENT then
     hook.Add("TTTTutorialRoleText", "RandomanTutorialRoleText", function(role, titleLabel, roleIcon)
