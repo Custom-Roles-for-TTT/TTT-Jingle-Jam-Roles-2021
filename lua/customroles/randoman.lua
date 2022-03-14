@@ -44,7 +44,11 @@ end)
 
 -- Prevents a randomat from ever triggering at all, while there is a Randoman alive during the round
 hook.Add("TTTRandomatCanEventRun", "HardBanRandomanEvents", function(event)
-    if event == "credits" and player.IsRoleLiving(ROLE_RANDOMAN) then return false end
+    if event.id == "credits" then
+        for _, ply in ipairs(player.GetAll()) do
+            if ply:GetRole() == ROLE_RANDOMAN then return false end
+        end
+    end
 end)
 
 if CLIENT then

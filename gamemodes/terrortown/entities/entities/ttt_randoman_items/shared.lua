@@ -139,8 +139,6 @@ if SERVER then
                         for _, categoryEvent in ipairs(events) do
                             if IsEventAllowed(categoryEvent) and Randomat:CanEventRun(categoryEvent, true) then
                                 event = categoryEvent
-                                item.material = "vgui/ttt/roles/ran/items/" .. category .. ".png"
-                                net.WriteString(category)
                                 break
                             end
                         end
@@ -155,10 +153,11 @@ if SERVER then
                         if istable(event.Categories) and not table.IsEmpty(event.Categories) then
                             category = event.Categories[1]
                         end
-
-                        net.WriteString(category)
                     end
 
+                    -- Update the icon and send the displayed category to the client
+                    item.material = "vgui/ttt/roles/ran/items/" .. category .. ".png"
+                    net.WriteString(category)
                     table.insert(chosenEvents, event.id)
                     -- Update randomat ID
                     item.eventid = event.id
