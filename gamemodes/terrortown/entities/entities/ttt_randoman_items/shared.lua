@@ -6,6 +6,10 @@ local initialID = -1
 local finalID = -1
 local itemTotal = 15
 
+if not istable(DefaultEquipment[ROLE_RANDOMAN]) then
+    DefaultEquipment[ROLE_RANDOMAN] = {}
+end
+
 -- Creating dummy passive shop items for now, on server and client.
 for i = 1, itemTotal do
     local itemID = GenerateNewEquipmentID and GenerateNewEquipmentID() or 8
@@ -29,6 +33,7 @@ for i = 1, itemTotal do
     }
 
     table.insert(EquipmentItems[ROLE_RANDOMAN], randomanItem)
+    table.insert(DefaultEquipment[ROLE_RANDOMAN], itemID)
 end
 
 local function IsRandomanItem(id)
@@ -38,6 +43,11 @@ end
 if SERVER then
     AddCSLuaFile()
     util.AddNetworkString("UpdateRandomanItems")
+    local eventsByCategory = {}
+
+    for _, category in ipairs(Randomat:GetAllEventCategories()) do
+        eventsByCategory[category] = Randomat:GetEventsByCategory(category)
+    end
 
     -- Prevent multiple of the same randomats from triggering
     hook.Add("TTTCanOrderEquipment", "RandomanCheckRepeatItem", function(ply, id, is_item)
@@ -107,12 +117,47 @@ if SERVER then
     hook.Add("TTTBeginRound", "UpdateRandomanItems", function()
         if playerJoined or player.IsRoleLiving(ROLE_RANDOMAN) then
             table.Empty(chosenEvents)
+            local guaranteedEventCategories = string.Explode(",", GetConVar("ttt_randoman_guaranteed_randomat_categories"):GetString())
+            local guaranteedItemCount = #guaranteedEventCategories
+            local randomanItemCount = 0
             net.Start("UpdateRandomanItems")
 
-            for i, item in ipairs(EquipmentItems[ROLE_RANDOMAN]) do
+            for _, item in ipairs(EquipmentItems[ROLE_RANDOMAN]) do
                 -- Check that it is using one of the IDs used by a randoman item
                 if IsRandomanItem(item.id) then
-                    local event = Randomat:GetRandomEvent(true, IsEventAllowed)
+                    randomanItemCount = randomanItemCount + 1
+                    local event
+                    local category
+
+                    -- First put all guaranteed events in
+                    if randomanItemCount <= guaranteedItemCount then
+                        category = guaranteedEventCategories[randomanItemCount]
+                        local events = eventsByCategory[category]
+                        table.Shuffle(events)
+
+                        -- Find a random event in that category that is allowed to run
+                        for _, categoryEvent in ipairs(events) do
+                            if IsEventAllowed(categoryEvent) and Randomat:CanEventRun(categoryEvent, true) then
+                                event = categoryEvent
+                                break
+                            end
+                        end
+                    end
+
+                    -- If no events of that category are allowed to run,
+                    -- or we're done with guaranteed events, find a complete random one
+                    if not event then
+                        event = Randomat:GetRandomEvent(true, IsEventAllowed)
+                        category = "moderateimpact"
+
+                        if istable(event.Categories) and not table.IsEmpty(event.Categories) then
+                            category = event.Categories[1]
+                        end
+                    end
+
+                    -- Update the icon and send the displayed category to the client
+                    item.material = "vgui/ttt/roles/ran/items/" .. category .. ".png"
+                    net.WriteString(category)
                     table.insert(chosenEvents, event.id)
                     -- Update randomat ID
                     item.eventid = event.id
@@ -141,6 +186,9 @@ if SERVER then
                         end
                     end
 
+                    -- Add event's category to its description 
+                    -- There is guaranteed to be one, as moderate impact is the fallback category for an event without one
+                    description = "Category: " .. Randomat:GetReadableCategory(category) .. "\n\n" .. description
                     item.desc = description
                     net.WriteString(description)
                 end
@@ -175,6 +223,7 @@ if CLIENT then
         for i, item in ipairs(EquipmentItems[ROLE_RANDOMAN]) do
             -- Check that it is using one of the IDs used by a randoman item
             if IsRandomanItem(item.id) then
+                item.material = "vgui/ttt/roles/ran/items/" .. net.ReadString() .. ".png"
                 item.eventid = net.ReadString()
                 item.name = net.ReadString()
                 item.desc = net.ReadString()

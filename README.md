@@ -38,8 +38,10 @@ _Requires [TTT Randomat 2.0 for Custom Roles for TTT](https://steamcommunity.com
 \
 **ConVars**
 ```cpp
-ttt_randoman_banned_randomats        credits,blind,speedrun,blerg,deadchat,lame,choose,randomxn,intensifies,delay,oncemore    // The randomats that are not allowed to appear in the randoman's shop. Separate randomat ids with commas. You can find a randomat's ID by turning one off/on in the randomat ULX menu and coping the word between 'ttt_' and '_enabled' that appears in chat.
+ttt_randoman_banned_randomats        credits,lame    // Events not allowed in the randoman's shop, separate ids with commas. You can find an ID by turning a randomat on/off in the randomat ULX menu and copying the word after 'ttt_randomat_', which appears in chat.
 ttt_randoman_prevent_auto_randomat   1    // Prevent auto-randomat triggering if there is a randoman at the start of the round.
+ttt_randoman_guaranteed_randomat_categories   biased_innocent,fun,moderateimpact    // A randomat from these categories is guaranteed be in the randoman's shop, separate categories with commas.
+// Categories: biased_innocent, biased_traitor, biased_zombie, biased, deathtrigger, entityspawn, eventtrigger, fun, gamemode, item, largeimpact, moderateimpact, rolechange, smallimpact, spectator, stats
 ```
 
 ## Santa
