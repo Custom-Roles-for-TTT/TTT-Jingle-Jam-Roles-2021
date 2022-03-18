@@ -178,8 +178,8 @@ if SERVER then
                     -- Update randomat description
                     local description = "'" .. longName .. "' is triggered when you buy this."
 
-                    if event.Description ~= nil and event.Description ~= "" then
-                        description = event.Description
+                    if (event.Description and event.Description ~= "") or (event.AltDescription and event.AltDescription ~= "") then
+                        description = event.Description or event.AltDescription
 
                         if descriptionName then
                             description = longName .. "\n\n" .. description
