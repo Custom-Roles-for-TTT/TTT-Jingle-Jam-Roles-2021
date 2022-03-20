@@ -3,6 +3,8 @@ if not Randomat or type(Randomat.IsInnocentTeam) ~= "function" then return end
 local initialID = -1
 local finalID = -1
 local itemTotal = 15
+-- Remove the radar and body armour from the Randoman's shop, the radar will be replaced by the 'No on can hide from my sight' event by default
+table.Empty(EquipmentItems[ROLE_RANDOMAN])
 
 if not istable(DefaultEquipment[ROLE_RANDOMAN]) then
     DefaultEquipment[ROLE_RANDOMAN] = {}
@@ -49,8 +51,6 @@ if SERVER then
     AddCSLuaFile()
     util.AddNetworkString("UpdateRandomanItems")
     local eventsByCategory = {}
-    -- Events that will always be in the shop, if possible
-    local forcedEvents = {"pocket"}
 
     for _, category in ipairs(Randomat:GetAllEventCategories()) do
         eventsByCategory[category] = Randomat:GetEventsByCategory(category)
@@ -92,10 +92,17 @@ if SERVER then
 
     local chosenEvents = {}
     local bannedEvents = {}
+    local forcedEvents = {}
 
-    -- Update the banned randomats list according to the convar. This hook is called repeatedly, to allow for changing the convar round-to-round
+    -- Update the banned randomats list, and guarantee 'What did I find in my pocket?' if the beggar is enabled.
+    -- This hook is called repeatedly, to allow for changing the convars round-to-round
     hook.Add("TTTUpdateRoleState", "UpdateBannedRandomanEvents", function()
         bannedEvents = string.Explode(",", GetConVar("ttt_randoman_banned_randomats"):GetString())
+        forcedEvents = string.Explode(",", GetConVar("ttt_randoman_guaranteed_randomats"):GetString())
+
+        if not table.HasValue(forcedEvents, "pocket") and GetConVar("ttt_beggar_enabled"):GetBool() then
+            table.insert(forcedEvents, "pocket")
+        end
     end)
 
     -- Used to filter out repeat, secret and banned randomats when randomly selecting them for the randoman's shop
@@ -115,9 +122,11 @@ if SERVER then
 
     local function GetCategory(event)
         local category = "moderateimpact"
+
         if istable(event.Categories) and not table.IsEmpty(event.Categories) then
             category = event.Categories[1]
         end
+
         return category
     end
 
@@ -161,10 +170,11 @@ if SERVER then
                         end
                     end
 
-                    -- If we haven't yet found an event, make sure we include the onces we always want to show
+                    -- If we haven't yet found an event, make sure we include the ones we always want to show
                     if not event and forcedItemCount < forcedItemTotal then
                         forcedItemCount = forcedItemCount + 1
                         event = Randomat.Events[forcedEvents[forcedItemCount]]
+
                         if not IsEventAllowed(event) or not Randomat:CanEventRun(event) then
                             event = nil
                         else
