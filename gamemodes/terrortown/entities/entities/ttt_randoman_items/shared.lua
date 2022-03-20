@@ -1,13 +1,18 @@
 -- Don't run this if the randomat doesn't exist, the role obviously can't work then
 if not Randomat or type(Randomat.IsInnocentTeam) ~= "function" then return end
--- Remove the radar and body armour in the randoman's shop
-table.Empty(EquipmentItems[ROLE_RANDOMAN])
 local initialID = -1
 local finalID = -1
 local itemTotal = 15
 
 if not istable(DefaultEquipment[ROLE_RANDOMAN]) then
     DefaultEquipment[ROLE_RANDOMAN] = {}
+end
+
+-- Make sure none of the default equipment has the "Custom" icon on it
+for _, item in ipairs(EquipmentItems[ROLE_RANDOMAN]) do
+    if not table.HasValue(DefaultEquipment[ROLE_RANDOMAN], item.id) then
+        table.insert(DefaultEquipment[ROLE_RANDOMAN], item.id)
+    end
 end
 
 -- Creating dummy passive shop items for now, on server and client.
@@ -44,6 +49,8 @@ if SERVER then
     AddCSLuaFile()
     util.AddNetworkString("UpdateRandomanItems")
     local eventsByCategory = {}
+    -- Events that will always be in the shop, if possible
+    local forcedEvents = {"pocket"}
 
     for _, category in ipairs(Randomat:GetAllEventCategories()) do
         eventsByCategory[category] = Randomat:GetEventsByCategory(category)
@@ -106,6 +113,14 @@ if SERVER then
         return true
     end
 
+    local function GetCategory(event)
+        local category = "moderateimpact"
+        if istable(event.Categories) and not table.IsEmpty(event.Categories) then
+            category = event.Categories[1]
+        end
+        return category
+    end
+
     -- Only update the randoman's shop if there actually is one, or if a player joins since the last round started
     -- (In case a player is forcibly made a randoman, either through commands or a randomat)
     local playerJoined = false
@@ -119,6 +134,8 @@ if SERVER then
             table.Empty(chosenEvents)
             local guaranteedEventCategories = string.Explode(",", GetConVar("ttt_randoman_guaranteed_randomat_categories"):GetString())
             local guaranteedItemCount = #guaranteedEventCategories
+            local forcedItemCount = 0
+            local forcedItemTotal = #forcedEvents
             local randomanItemCount = 0
             net.Start("UpdateRandomanItems")
 
@@ -137,22 +154,28 @@ if SERVER then
 
                         -- Find a random event in that category that is allowed to run
                         for _, categoryEvent in ipairs(events) do
-                            if IsEventAllowed(categoryEvent) and Randomat:CanEventRun(categoryEvent, true) then
+                            if IsEventAllowed(categoryEvent) and Randomat:CanEventRun(categoryEvent) then
                                 event = categoryEvent
                                 break
                             end
                         end
                     end
 
-                    -- If no events of that category are allowed to run,
-                    -- or we're done with guaranteed events, find a complete random one
+                    -- If we haven't yet found an event, make sure we include the onces we always want to show
+                    if not event and forcedItemCount < forcedItemTotal then
+                        forcedItemCount = forcedItemCount + 1
+                        event = Randomat.Events[forcedEvents[forcedItemCount]]
+                        if not IsEventAllowed(event) or not Randomat:CanEventRun(event) then
+                            event = nil
+                        else
+                            category = GetCategory(event)
+                        end
+                    end
+
+                    -- If no valid event has been found so far, find a completely random one
                     if not event then
                         event = Randomat:GetRandomEvent(true, IsEventAllowed)
-                        category = "moderateimpact"
-
-                        if istable(event.Categories) and not table.IsEmpty(event.Categories) then
-                            category = event.Categories[1]
-                        end
+                        category = GetCategory(event)
                     end
 
                     -- Update the icon and send the displayed category to the client
