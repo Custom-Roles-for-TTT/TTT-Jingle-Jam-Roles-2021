@@ -44,6 +44,7 @@ if SERVER then
     end)
 
     local blockedEvents = {
+        ["blackmarket"] = "removes the main feature of the role",
         ["credits"] = "makes their role overpowered",
         ["future"] = "can't consistently work with the dynamic shop events"
     }
