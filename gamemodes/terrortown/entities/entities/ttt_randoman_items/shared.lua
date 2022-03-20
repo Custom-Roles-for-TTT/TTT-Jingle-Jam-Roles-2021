@@ -3,8 +3,8 @@ if not Randomat or type(Randomat.IsInnocentTeam) ~= "function" then return end
 local initialID = -1
 local finalID = -1
 local itemTotal = 15
--- Remove the radar and body armour from the Randoman's shop, the radar will be replaced by the 'No on can hide from my sight' event by default
-table.Empty(EquipmentItems[ROLE_RANDOMAN])
+-- Remove the body armour from the Randoman's shop, but leave the radar
+table.remove(EquipmentItems[ROLE_RANDOMAN], tostring(EQUIP_ARMOR))
 
 if not istable(DefaultEquipment[ROLE_RANDOMAN]) then
     DefaultEquipment[ROLE_RANDOMAN] = {}
@@ -97,8 +97,16 @@ if SERVER then
     -- Update the banned randomats list, and guarantee 'What did I find in my pocket?' if the beggar is enabled.
     -- This hook is called repeatedly, to allow for changing the convars round-to-round
     hook.Add("TTTUpdateRoleState", "UpdateBannedRandomanEvents", function()
-        bannedEvents = string.Explode(",", GetConVar("ttt_randoman_banned_randomats"):GetString())
-        forcedEvents = string.Explode(",", GetConVar("ttt_randoman_guaranteed_randomats"):GetString())
+        local bannedEventsString = GetConVar("ttt_randoman_banned_randomats"):GetString()
+        local forcedEventsString = GetConVar("ttt_randoman_guaranteed_randomats"):GetString()
+
+        if #bannedEventsString > 0 then
+            bannedEvents = string.Explode(",", bannedEventsString)
+        end
+
+        if #forcedEventsString > 0 then
+            forcedEvents = string.Explode(",", forcedEventsString)
+        end
 
         if not table.HasValue(forcedEvents, "pocket") and GetConVar("ttt_beggar_enabled"):GetBool() then
             table.insert(forcedEvents, "pocket")
@@ -141,23 +149,29 @@ if SERVER then
     hook.Add("TTTBeginRound", "UpdateRandomanItems", function()
         if playerJoined or player.IsRoleLiving(ROLE_RANDOMAN) then
             table.Empty(chosenEvents)
-            local guaranteedEventCategories = string.Explode(",", GetConVar("ttt_randoman_guaranteed_randomat_categories"):GetString())
-            local guaranteedItemCount = #guaranteedEventCategories
+            local guaranteedEventCategories = {}
+            local guaranteedEventCategoriesString = GetConVar("ttt_randoman_guaranteed_randomat_categories"):GetString()
+
+            if #guaranteedEventCategoriesString > 0 then
+                guaranteedEventCategories = string.Explode(",", guaranteedEventCategoriesString)
+            end
+
+            local guaranteedItemCount = 0
+            local guaranteedItemTotal = #guaranteedEventCategories
             local forcedItemCount = 0
             local forcedItemTotal = #forcedEvents
-            local randomanItemCount = 0
             net.Start("UpdateRandomanItems")
 
             for _, item in ipairs(EquipmentItems[ROLE_RANDOMAN]) do
                 -- Check that it is using one of the IDs used by a randoman item
                 if IsRandomanItem(item.id) then
-                    randomanItemCount = randomanItemCount + 1
                     local event
                     local category
 
                     -- First put all guaranteed events in
-                    if randomanItemCount <= guaranteedItemCount then
-                        category = guaranteedEventCategories[randomanItemCount]
+                    if guaranteedItemCount < guaranteedItemTotal then
+                        guaranteedItemCount = guaranteedItemCount + 1
+                        category = guaranteedEventCategories[guaranteedItemCount]
                         local events = eventsByCategory[category]
                         table.Shuffle(events)
 

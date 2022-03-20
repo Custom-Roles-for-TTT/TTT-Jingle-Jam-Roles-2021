@@ -19,7 +19,7 @@ CreateConVar("ttt_randoman_prevent_auto_randomat", 1, {FCVAR_NOTIFY}, "Prevent a
 
 CreateConVar("ttt_randoman_guaranteed_randomat_categories", "biased_innocent,fun,moderateimpact", {FCVAR_NOTIFY}, "At least one randomat from each of these categories will always be in the randoman's shop. You can find a randomat's category by looking at an event in the randomat ULX menu.")
 
-CreateConVar("ttt_randoman_guaranteed_randomats", "wallhack", {FCVAR_NOTIFY}, "Events that will always appear in the randoma's shop, separate ids with commas.")
+CreateConVar("ttt_randoman_guaranteed_randomats", "", {FCVAR_NOTIFY}, "Events that will always appear in the randoma's shop, separate ids with commas.")
 
 ROLE.convars = {
     {
@@ -59,7 +59,9 @@ if SERVER then
         if not blockedEvents[event.Id] then return end
 
         for _, ply in ipairs(player.GetAll()) do
-            if ply:IsRandoman() then return false, "There is " .. ROLE_STRINGS_EXT[ROLE_RANDOMAN] .. " in the round and this event " .. blockedEvents[event.Id] end
+            if ply:IsRandoman() then 
+                return false, "There is " .. ROLE_STRINGS_EXT[ROLE_RANDOMAN] .. " in the round and this event " .. blockedEvents[event.Id] 
+            end
         end
     end)
 end
