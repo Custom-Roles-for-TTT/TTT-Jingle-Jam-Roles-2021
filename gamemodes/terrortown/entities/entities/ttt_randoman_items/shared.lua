@@ -1,13 +1,17 @@
 -- Don't run this if the randomat doesn't exist, the role obviously can't work then
 if not Randomat or type(Randomat.IsInnocentTeam) ~= "function" then return end
--- Remove the radar and body armour in the randoman's shop
-table.Empty(EquipmentItems[ROLE_RANDOMAN])
 local initialID = -1
 local finalID = -1
 local itemTotal = 15
 
 if not istable(DefaultEquipment[ROLE_RANDOMAN]) then
     DefaultEquipment[ROLE_RANDOMAN] = {}
+end
+
+for _, item in ipairs(EquipmentItems[ROLE_RANDOMAN]) do
+    if not table.HasValue(DefaultEquipment[ROLE_RANDOMAN], item.id) then
+        table.insert(DefaultEquipment[ROLE_RANDOMAN], item.id)
+    end
 end
 
 -- Creating dummy passive shop items for now, on server and client.
@@ -137,7 +141,7 @@ if SERVER then
 
                         -- Find a random event in that category that is allowed to run
                         for _, categoryEvent in ipairs(events) do
-                            if IsEventAllowed(categoryEvent) and Randomat:CanEventRun(categoryEvent, true) then
+                            if IsEventAllowed(categoryEvent) and Randomat:CanEventRun(categoryEvent) then
                                 event = categoryEvent
                                 break
                             end
