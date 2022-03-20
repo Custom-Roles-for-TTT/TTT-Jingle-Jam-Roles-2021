@@ -8,6 +8,7 @@ if not istable(DefaultEquipment[ROLE_RANDOMAN]) then
     DefaultEquipment[ROLE_RANDOMAN] = {}
 end
 
+-- Make sure none of the default equipment has the "Custom" icon on it
 for _, item in ipairs(EquipmentItems[ROLE_RANDOMAN]) do
     if not table.HasValue(DefaultEquipment[ROLE_RANDOMAN], item.id) then
         table.insert(DefaultEquipment[ROLE_RANDOMAN], item.id)
