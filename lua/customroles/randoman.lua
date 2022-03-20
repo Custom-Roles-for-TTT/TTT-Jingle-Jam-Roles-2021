@@ -43,13 +43,17 @@ if SERVER then
         if GetConVar("ttt_randoman_prevent_auto_randomat"):GetBool() and player.IsRoleLiving(ROLE_RANDOMAN) then return false end
     end)
 
+    local blockedEvents = {
+        ["credits"] = "makes their role overpowered",
+        ["future"] = "can't consistently work with the dynamic shop events"
+    }
     -- Prevents a randomat from ever triggering if there is a Randoman in the round
     hook.Add("TTTRandomatCanEventRun", "HardBanRandomanEvents", function(event)
-        if event.Id ~= "credits" then return end
+        if not blockedEvents[event.Id] then return end
 
         for _, ply in ipairs(player.GetAll()) do
             if ply:IsRandoman() then
-                return false, "There is " .. ROLE_STRINGS_EXT[ROLE_RANDOMAN] .. " in the round and this event makes their role overpowered"
+                return false, "There is " .. ROLE_STRINGS_EXT[ROLE_RANDOMAN] .. " in the round and this event " .. blockedEvents[event.Id]
             end
         end
     end)
