@@ -51,6 +51,8 @@ if SERVER then
     AddCSLuaFile()
     util.AddNetworkString("UpdateRandomanItems")
     local eventsByCategory = {}
+    -- Events that will always be in the shop, if possible
+    local forcedEvents = {"pocket"}
 
     for _, category in ipairs(Randomat:GetAllEventCategories()) do
         eventsByCategory[category] = Randomat:GetEventsByCategory(category)
@@ -170,7 +172,7 @@ if SERVER then
                         end
                     end
 
-                    -- If we haven't yet found an event, make sure we include the ones we always want to show
+                    -- If we haven't yet found an event, make sure we include the onces we always want to show
                     if not event and forcedItemCount < forcedItemTotal then
                         forcedItemCount = forcedItemCount + 1
                         event = Randomat.Events[forcedEvents[forcedItemCount]]
