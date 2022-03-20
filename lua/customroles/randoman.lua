@@ -59,8 +59,8 @@ if SERVER then
         if not blockedEvents[event.Id] then return end
 
         for _, ply in ipairs(player.GetAll()) do
-            if ply:IsRandoman() then 
-                return false, "There is " .. ROLE_STRINGS_EXT[ROLE_RANDOMAN] .. " in the round and this event " .. blockedEvents[event.Id] 
+            if ply:IsRandoman() then
+                return false, "There is " .. ROLE_STRINGS_EXT[ROLE_RANDOMAN] .. " in the round and this event " .. blockedEvents[event.Id]
             end
         end
     end)
