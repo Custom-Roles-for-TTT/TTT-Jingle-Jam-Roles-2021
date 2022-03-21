@@ -102,7 +102,7 @@ if SERVER then
     -- This hook is called repeatedly, to allow for changing the convars round-to-round
     hook.Add("TTTUpdateRoleState", "UpdateBannedRandomanEvents", function()
         local bannedEventsString = GetConVar("ttt_randoman_banned_randomats"):GetString()
-        local guaranteedEventCategoriesString = GetConVar("ttt_randoman_guaranteed_randomat_categories"):GetString()
+        local guaranteedEventCategoriesString = GetConVar("ttt_randoman_guaranteed_categories"):GetString()
         local forcedEventsString = GetConVar("ttt_randoman_guaranteed_randomats"):GetString()
 
         if #bannedEventsString > 0 then
