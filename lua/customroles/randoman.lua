@@ -12,13 +12,14 @@ ROLE.loadout = {}
 ROLE.startingcredits = 1
 ROLE.selectionpredicate = function() return Randomat and type(Randomat.IsInnocentTeam) == "function" end
 
--- The credits event would break the role and cause a bit too much chaos
 -- Lame is pointless to have in the shop as it itself does nothing
-CreateConVar("ttt_randoman_banned_randomats", "credits,lame", {FCVAR_NOTIFY}, "Events not allowed in the randoman's shop, separate ids with commas. You can find an ID by turning a randomat on/off in the randomat ULX menu and copying the word after 'ttt_randomat_', which appears in chat.")
+CreateConVar("ttt_randoman_banned_randomats", "lame", {FCVAR_NOTIFY}, "Events not allowed in the randoman's shop, separate ids with commas. You can find an ID by turning a randomat on/off in the randomat ULX menu and copying the word after 'ttt_randomat_', which appears in chat.")
 
 CreateConVar("ttt_randoman_prevent_auto_randomat", 1, {FCVAR_NOTIFY}, "Prevent auto-randomat triggering if there is a randoman at the start of the round", 0, 1)
 
-CreateConVar("ttt_randoman_guaranteed_randomat_categories", "biased_innocent,fun,moderateimpact", {FCVAR_NOTIFY}, "At least one randomat from each of these categories will always be in the randoman's shop. You can find a randomat's category by looking at an event in the randomat ULX menu.")
+CreateConVar("ttt_randoman_guaranteed_categories", "biased_innocent,fun,moderateimpact", {FCVAR_NOTIFY}, "At least one randomat from each of these categories will always be in the randoman's shop. You can find a randomat's category by looking at an event in the randomat ULX menu.")
+
+CreateConVar("ttt_randoman_guaranteed_randomats", "", {FCVAR_NOTIFY}, "Events that will always appear in the randoma's shop, separate ids with commas.")
 
 ROLE.convars = {
     {
@@ -30,7 +31,11 @@ ROLE.convars = {
         type = ROLE_CONVAR_TYPE_BOOL
     },
     {
-        cvar = "ttt_randoman_guaranteed_randomat_categories",
+        cvar = "ttt_randoman_guaranteed_categories",
+        type = ROLE_CONVAR_TYPE_TEXT
+    },
+    {
+        cvar = "ttt_randoman_guaranteed_randomats",
         type = ROLE_CONVAR_TYPE_TEXT
     }
 }
@@ -48,6 +53,7 @@ if SERVER then
         ["credits"] = "makes their role overpowered",
         ["future"] = "can't consistently work with the dynamic shop events"
     }
+
     -- Prevents a randomat from ever triggering if there is a Randoman in the round
     hook.Add("TTTRandomatCanEventRun", "HardBanRandomanEvents", function(event)
         if not blockedEvents[event.Id] then return end

@@ -4,6 +4,11 @@ local initialID = -1
 local finalID = -1
 local itemTotal = 15
 
+-- Remove the body armour from the Randoman's shop, if it is set to appear there by default
+if not GetConVar("ttt_special_detectives_armor_loadout"):GetBool() then
+    table.remove(EquipmentItems[ROLE_RANDOMAN], tostring(EQUIP_ARMOR))
+end
+
 if not istable(DefaultEquipment[ROLE_RANDOMAN]) then
     DefaultEquipment[ROLE_RANDOMAN] = {}
 end
@@ -49,8 +54,6 @@ if SERVER then
     AddCSLuaFile()
     util.AddNetworkString("UpdateRandomanItems")
     local eventsByCategory = {}
-    -- Events that will always be in the shop, if possible
-    local forcedEvents = {"pocket"}
 
     for _, category in ipairs(Randomat:GetAllEventCategories()) do
         eventsByCategory[category] = Randomat:GetEventsByCategory(category)
@@ -92,10 +95,37 @@ if SERVER then
 
     local chosenEvents = {}
     local bannedEvents = {}
+    local guaranteedEventCategories = {}
+    local forcedEvents = {}
 
-    -- Update the banned randomats list according to the convar. This hook is called repeatedly, to allow for changing the convar round-to-round
+    -- Update the banned randomats list, and guarantee 'What did I find in my pocket?' if the beggar is enabled.
+    -- This hook is called repeatedly, to allow for changing the convars round-to-round
     hook.Add("TTTUpdateRoleState", "UpdateBannedRandomanEvents", function()
-        bannedEvents = string.Explode(",", GetConVar("ttt_randoman_banned_randomats"):GetString())
+        local bannedEventsString = GetConVar("ttt_randoman_banned_randomats"):GetString()
+        local guaranteedEventCategoriesString = GetConVar("ttt_randoman_guaranteed_categories"):GetString()
+        local forcedEventsString = GetConVar("ttt_randoman_guaranteed_randomats"):GetString()
+
+        if #bannedEventsString > 0 then
+            bannedEvents = string.Explode(",", bannedEventsString)
+        else
+            bannedEvents = {}
+        end
+
+        if #guaranteedEventCategoriesString > 0 then
+            guaranteedEventCategories = string.Explode(",", guaranteedEventCategoriesString)
+        else
+            guaranteedEventCategories = {}
+        end
+
+        if #forcedEventsString > 0 then
+            forcedEvents = string.Explode(",", forcedEventsString)
+        else
+            forcedEvents = {}
+        end
+
+        if not table.HasValue(forcedEvents, "pocket") and GetConVar("ttt_beggar_enabled"):GetBool() then
+            table.insert(forcedEvents, "pocket")
+        end
     end)
 
     -- Used to filter out repeat, secret and banned randomats when randomly selecting them for the randoman's shop
@@ -115,9 +145,11 @@ if SERVER then
 
     local function GetCategory(event)
         local category = "moderateimpact"
+
         if istable(event.Categories) and not table.IsEmpty(event.Categories) then
             category = event.Categories[1]
         end
+
         return category
     end
 
@@ -132,23 +164,22 @@ if SERVER then
     hook.Add("TTTBeginRound", "UpdateRandomanItems", function()
         if playerJoined or player.IsRoleLiving(ROLE_RANDOMAN) then
             table.Empty(chosenEvents)
-            local guaranteedEventCategories = string.Explode(",", GetConVar("ttt_randoman_guaranteed_randomat_categories"):GetString())
-            local guaranteedItemCount = #guaranteedEventCategories
+            local guaranteedItemCount = 0
+            local guaranteedItemTotal = #guaranteedEventCategories
             local forcedItemCount = 0
             local forcedItemTotal = #forcedEvents
-            local randomanItemCount = 0
             net.Start("UpdateRandomanItems")
 
             for _, item in ipairs(EquipmentItems[ROLE_RANDOMAN]) do
                 -- Check that it is using one of the IDs used by a randoman item
                 if IsRandomanItem(item.id) then
-                    randomanItemCount = randomanItemCount + 1
                     local event
                     local category
 
                     -- First put all guaranteed events in
-                    if randomanItemCount <= guaranteedItemCount then
-                        category = guaranteedEventCategories[randomanItemCount]
+                    if guaranteedItemCount < guaranteedItemTotal then
+                        guaranteedItemCount = guaranteedItemCount + 1
+                        category = guaranteedEventCategories[guaranteedItemCount]
                         local events = eventsByCategory[category]
                         table.Shuffle(events)
 
@@ -165,6 +196,7 @@ if SERVER then
                     if not event and forcedItemCount < forcedItemTotal then
                         forcedItemCount = forcedItemCount + 1
                         event = Randomat.Events[forcedEvents[forcedItemCount]]
+
                         if not IsEventAllowed(event) or not Randomat:CanEventRun(event) then
                             event = nil
                         else
