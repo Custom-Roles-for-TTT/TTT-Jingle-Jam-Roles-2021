@@ -17,7 +17,7 @@ CreateConVar("ttt_randoman_banned_randomats", "lame", {FCVAR_NOTIFY}, "Events no
 
 CreateConVar("ttt_randoman_prevent_auto_randomat", 1, {FCVAR_NOTIFY}, "Prevent auto-randomat triggering if there is a randoman at the start of the round", 0, 1)
 
-CreateConVar("ttt_randoman_guaranteed_randomat_categories", "biased_innocent,fun,moderateimpact", {FCVAR_NOTIFY}, "At least one randomat from each of these categories will always be in the randoman's shop. You can find a randomat's category by looking at an event in the randomat ULX menu.")
+CreateConVar("ttt_randoman_guaranteed_categories", "biased_innocent,fun,moderateimpact", {FCVAR_NOTIFY}, "At least one randomat from each of these categories will always be in the randoman's shop. You can find a randomat's category by looking at an event in the randomat ULX menu.")
 
 CreateConVar("ttt_randoman_guaranteed_randomats", "", {FCVAR_NOTIFY}, "Events that will always appear in the randoma's shop, separate ids with commas.")
 
@@ -31,7 +31,7 @@ ROLE.convars = {
         type = ROLE_CONVAR_TYPE_BOOL
     },
     {
-        cvar = "ttt_randoman_guaranteed_randomat_categories",
+        cvar = "ttt_randoman_guaranteed_categories",
         type = ROLE_CONVAR_TYPE_TEXT
     },
     {
