@@ -3,8 +3,11 @@ if not Randomat or type(Randomat.IsInnocentTeam) ~= "function" then return end
 local initialID = -1
 local finalID = -1
 local itemTotal = 15
--- Remove the body armour from the Randoman's shop, but leave the radar
-table.remove(EquipmentItems[ROLE_RANDOMAN], tostring(EQUIP_ARMOR))
+
+-- Remove the body armour from the Randoman's shop, if it is set to appear there by default
+if GetConVar("ttt_special_detectives_armor_loadout"):GetBool() == false then
+    table.remove(EquipmentItems[ROLE_RANDOMAN], tostring(EQUIP_ARMOR))
+end
 
 if not istable(DefaultEquipment[ROLE_RANDOMAN]) then
     DefaultEquipment[ROLE_RANDOMAN] = {}
@@ -51,8 +54,6 @@ if SERVER then
     AddCSLuaFile()
     util.AddNetworkString("UpdateRandomanItems")
     local eventsByCategory = {}
-    -- Events that will always be in the shop, if possible
-    local forcedEvents = {"pocket"}
 
     for _, category in ipairs(Randomat:GetAllEventCategories()) do
         eventsByCategory[category] = Randomat:GetEventsByCategory(category)
@@ -94,20 +95,32 @@ if SERVER then
 
     local chosenEvents = {}
     local bannedEvents = {}
+    local guaranteedEventCategories = {}
     local forcedEvents = {}
 
     -- Update the banned randomats list, and guarantee 'What did I find in my pocket?' if the beggar is enabled.
     -- This hook is called repeatedly, to allow for changing the convars round-to-round
     hook.Add("TTTUpdateRoleState", "UpdateBannedRandomanEvents", function()
         local bannedEventsString = GetConVar("ttt_randoman_banned_randomats"):GetString()
+        local guaranteedEventCategoriesString = GetConVar("ttt_randoman_guaranteed_randomat_categories"):GetString()
         local forcedEventsString = GetConVar("ttt_randoman_guaranteed_randomats"):GetString()
 
         if #bannedEventsString > 0 then
             bannedEvents = string.Explode(",", bannedEventsString)
+        else
+            bannedEvents = {}
+        end
+
+        if #guaranteedEventCategoriesString > 0 then
+            guaranteedEventCategories = string.Explode(",", guaranteedEventCategoriesString)
+        else
+            guaranteedEventCategories = {}
         end
 
         if #forcedEventsString > 0 then
             forcedEvents = string.Explode(",", forcedEventsString)
+        else
+            forcedEvents = {}
         end
 
         if not table.HasValue(forcedEvents, "pocket") and GetConVar("ttt_beggar_enabled"):GetBool() then
@@ -151,13 +164,6 @@ if SERVER then
     hook.Add("TTTBeginRound", "UpdateRandomanItems", function()
         if playerJoined or player.IsRoleLiving(ROLE_RANDOMAN) then
             table.Empty(chosenEvents)
-            local guaranteedEventCategories = {}
-            local guaranteedEventCategoriesString = GetConVar("ttt_randoman_guaranteed_randomat_categories"):GetString()
-
-            if #guaranteedEventCategoriesString > 0 then
-                guaranteedEventCategories = string.Explode(",", guaranteedEventCategoriesString)
-            end
-
             local guaranteedItemCount = 0
             local guaranteedItemTotal = #guaranteedEventCategories
             local forcedItemCount = 0
