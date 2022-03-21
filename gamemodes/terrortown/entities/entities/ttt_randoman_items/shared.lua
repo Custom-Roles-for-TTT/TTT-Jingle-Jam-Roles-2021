@@ -5,7 +5,7 @@ local finalID = -1
 local itemTotal = 15
 
 -- Remove the body armour from the Randoman's shop, if it is set to appear there by default
-if GetConVar("ttt_special_detectives_armor_loadout"):GetBool() == false then
+if not GetConVar("ttt_special_detectives_armor_loadout"):GetBool() then
     table.remove(EquipmentItems[ROLE_RANDOMAN], tostring(EQUIP_ARMOR))
 end
 
