@@ -10,6 +10,9 @@ The Boxer is a jester role whose goal is to knock out all of the living players.
 \
 **ConVars**
 ```cpp
+ttt_boxer_enabled                    0    // Whether or not the boxer should spawn
+ttt_boxer_spawn_weight               1    // The weight assigned to spawning the boxer
+ttt_boxer_min_players                0    // The minimum number of players required to spawn the boxer
 ttt_boxer_speed_bonus                0.35 // The percent bonus speed a boxer will get while their gloves are out
 ttt_boxer_drop_chance                0.33 // The percent chance that a player targeted by the boxer's primary attack will drop their current weapon
 ttt_boxer_knockout_chance            0.33 // The percent chance that a player targeted by the boxer's primary attack will get knocked out
@@ -24,6 +27,9 @@ The Communist is an independent role whose goal is to convert all living players
 \
 **ConVars**
 ```cpp
+ttt_communist_enabled                0    // Whether or not the communist should spawn
+ttt_communist_spawn_weight           1    // The weight assigned to spawning the communist
+ttt_communist_min_players            0    // The minimum number of players required to spawn the communist
 ttt_communist_convert_time           5    // The amount of time it takes the Communist Manifesto to convert a player
 ttt_communist_convert_credits        1    // How many credits to award the non-communists when a player is converted
 ttt_communist_convert_freeze         0    // Whether to freeze a player in place while they are being converted
@@ -38,6 +44,9 @@ _Requires [TTT Randomat 2.0 for Custom Roles for TTT](https://steamcommunity.com
 \
 **ConVars**
 ```cpp
+ttt_randoman_enabled                 0    // Whether or not the randoman should spawn
+ttt_randoman_spawn_weight            1    // The weight assigned to spawning the randoman
+ttt_randoman_min_players             0    // The minimum number of players required to spawn the randoman
 ttt_randoman_banned_randomats        lame // Events not allowed in the randoman's shop, separate ids with commas. You can find an ID by turning a randomat on/off in the randomat ULX menu and copying the word after 'ttt_randomat_', which appears in chat.
 ttt_randoman_prevent_auto_randomat   1    // Prevent auto-randomat triggering if there is a randoman at the start of the round.
 ttt_randoman_guaranteed_categories   biased_innocent,fun,moderateimpact    // A randomat from these categories is guaranteed be in the randoman's shop, separate categories with commas.
@@ -52,9 +61,12 @@ Santa is a detective who is able to give gifts to nice players and coal to naugh
 \
 **ConVars**
 ```cpp
-ttt_santa_random_presents           0   // Whether santa should give random presents instead of being able to choose presents from the shop
-ttt_santa_jesters_are_naughty       1   // Whether jesters are considered to be "naughty" players
-ttt_santa_independents_are_naughty  0   // Whether independents are considered to be "naughty" players
+ttt_santa_enabled                    0    // Whether or not the santa should spawn
+ttt_santa_spawn_weight               1    // The weight assigned to spawning the santa
+ttt_santa_min_players                0    // The minimum number of players required to spawn the santa
+ttt_santa_random_presents            0    // Whether santa should give random presents instead of being able to choose presents from the shop
+ttt_santa_jesters_are_naughty        1    // Whether jesters are considered to be "naughty" players
+ttt_santa_independents_are_naughty   0    // Whether independents are considered to be "naughty" players
 ```
 
 ## Taxidermist
@@ -64,6 +76,9 @@ The Taxidermist is a member of the traitor team whose goal is to use their taxid
 \
 **ConVars**
 ```cpp
+ttt_taxidermist_enabled              0    // Whether or not the taxidermist should spawn
+ttt_taxidermist_spawn_weight         1    // The weight assigned to spawning the taxidermist
+ttt_taxidermist_min_players          0    // The minimum number of players required to spawn the taxidermist
 ttt_taxidermist_device_time          5    // The number of seconds the taxidermist's device takes to use on a corpse
 ```
 
