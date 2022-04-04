@@ -4,13 +4,6 @@ local initialID = -1
 local finalID = -1
 local itemTotal = 15
 
-hook.Add("TTTUpdateRoleState", "Randoman_TTTUpdateRoleState", function()
-    -- Remove the body armor from the Randoman's shop if they aren't just given it by default
-    if not GetGlobalBool("ttt_special_detectives_armor_loadout", true) then
-        table.remove(EquipmentItems[ROLE_RANDOMAN], tostring(EQUIP_ARMOR))
-    end
-end)
-
 if not istable(DefaultEquipment[ROLE_RANDOMAN]) then
     DefaultEquipment[ROLE_RANDOMAN] = {}
 end
