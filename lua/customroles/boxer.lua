@@ -107,16 +107,23 @@ if SERVER then
         ragdoll:SetNWString("nick", self:Nick())
         ragdoll:SetDTBool(BOOL_FOUND, true)
         ragdoll.playerHealth = self:Health()
+        ragdoll.playerColor = self:GetPlayerColor()
         -- Don't let the red matter bomb destroy this ragdoll
         ragdoll.WYOZIBHDontEat = true
         -- Let the user be revived by other players
         ragdoll.CanUseKey = true
         ragdoll.UseOverride = OnRagdollUsed
 
-        ragdoll:SetPos(self:GetPos())
         local velocity = self:GetVelocity()
-        ragdoll:SetAngles(self:GetAngles())
+        ragdoll:SetPos(self:GetPos())
         ragdoll:SetModel(self:GetModel())
+        ragdoll:SetSkin(self:GetSkin())
+        for _, value in pairs(self:GetBodyGroups()) do
+            ragdoll:SetBodygroup(value.id, self:GetBodygroup(value.id))
+        end
+        ragdoll:SetAngles(self:GetAngles())
+        ragdoll:SetColor(self:GetColor())
+        CORPSE.SetPlayerNick(ragdoll, self)
         ragdoll:Spawn()
         ragdoll:Activate()
 
@@ -164,6 +171,7 @@ if SERVER then
         local yaw = boxerRagdoll:GetAngles().yaw
 		self:SetAngles(Angle(0, yaw, 0))
         self:SetModel(boxerRagdoll:GetModel())
+        self:SetPlayerColor(boxerRagdoll.playerColor)
 
         -- Let weapons be seen again
         self:DrawViewModel(true)
