@@ -144,6 +144,7 @@ if SERVER then
         corpse:SetPos(pos)
         corpse:SetAngles(ang)
         corpse:SetNWBool("Taxidermied", true)
+        corpse:AddFlags(FL_NOTARGET)
         corpse:Spawn()
 
         local phys = corpse:GetPhysicsObject()
