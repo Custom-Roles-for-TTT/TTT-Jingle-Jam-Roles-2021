@@ -118,7 +118,8 @@ if SERVER then
             forcedEvents = {}
         end
 
-        if not table.HasValue(forcedEvents, "pocket") and GetConVar("ttt_beggar_enabled"):GetBool() then
+        -- Add the 'What did I find in my pocket?' event to the randoman's shop if the beggar is enabled, and they don't already have access to the parasite cure
+        if not table.HasValue(forcedEvents, "pocket") and GetConVar("ttt_beggar_enabled"):GetBool() and not GetConVar("ttt_parasite_enabled"):GetBool() then
             table.insert(forcedEvents, "pocket")
         end
     end)
