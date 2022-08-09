@@ -221,6 +221,11 @@ if SERVER then
         end
     end
 
+    function SWEP:Holster()
+        self:Reset()
+        return true
+    end
+
     -- Prevent taxidermied bodies from taking damage
     hook.Add("EntityTakeDamage", "Taxidermist_EntityTakeDamage", function(ent, dmginfo)
         if IsValid(ent) and ent:GetNWBool("Taxidermied", false) then
