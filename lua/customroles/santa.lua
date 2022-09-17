@@ -91,7 +91,7 @@ if CLIENT then
         end
     end)
 
-    hook.Add("TTTHUDInfoPaint", "Santa_TTTHUDInfoPaint", function(client, label_left, label_top)
+    hook.Add("TTTHUDInfoPaint", "Santa_TTTHUDInfoPaint", function(client, label_left, label_top, active_labels)
         if client:IsSanta() and IsValid(client:GetActiveWeapon()) and client:GetActiveWeapon():GetClass() == "weapon_san_christmas_cannon" then
             surface.SetFont("TabLarge")
             surface.SetTextColor(255, 255, 255, 230)
@@ -122,8 +122,20 @@ if CLIENT then
             end
             local _, h = surface.GetTextSize(text)
 
+            -- Move this up based on how many other labels here are
+            if active_labels then
+                label_top = label_top + (20 * #active_labels)
+            else
+                label_top = label_top + 20
+            end
+
             surface.SetTextPos(label_left, ScrH() - label_top - h)
             surface.DrawText(text)
+
+            -- Track that the label was added so others can position accurately
+            if active_labels then
+                table.insert(active_labels, "santa_role_cannon")
+            end
         end
     end)
 end
