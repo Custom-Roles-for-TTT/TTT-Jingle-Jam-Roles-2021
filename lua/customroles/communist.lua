@@ -40,7 +40,7 @@ ROLE.translations = {
         ["manifesto_help_sec"] = "All {nameplural} win together",
         ["ev_communismconvert"] = "{victim} has been converted and turned to Communism!",
         ["ev_win_communist"] = "The {role} have converted all remaining players",
-        ["win_communist"] = "Communism has spread to all survivers",
+        ["win_communist"] = "Communism has spread to all survivors",
         ["hilite_win_communist"] = "COMMUNISM WINS",
         ["hilite_lose_communist"] = "AND CAPITALISM WINS"
     }
