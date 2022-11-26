@@ -76,7 +76,7 @@ Called when a player opens a present from santa.\
 *Parameters:*
 - *ply* - The santa who provided the present
 - *tgt* - The player who opened the present
-- *item_id* - The ID of the item/equipement in the present
+- *item_id* - The ID of the item/equipment in the present
 
 ## Taxidermist
 _Suggested By_: Horselover Fat\
