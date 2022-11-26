@@ -88,6 +88,8 @@ if SERVER then
                     owner:SetCredits(1)
                 end
 
+                hook.Call("TTTSantaPresentOpened", nil, owner, activator, item_id)
+
                 owner:PrintMessage(HUD_PRINTTALK, activator:Nick() .. " has opened your present and your ammo has been refunded.")
                 owner:SetNWBool("SantaHasAmmo", true)
                 self:Remove()

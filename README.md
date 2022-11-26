@@ -69,6 +69,15 @@ ttt_santa_jesters_are_naughty        1    // Whether jesters are considered to b
 ttt_santa_independents_are_naughty   0    // Whether independents are considered to be "naughty" players
 ```
 
+**Hooks**
+#### TTTSantaPresentOpened(ply, tgt, item_id)
+Called when a player opens a present from santa.\
+*Realm:* Server\
+*Parameters:*
+- *ply* - The santa who provided the present
+- *tgt* - The player who opened the present
+- *item_id* - The ID of the item/equipement in the present
+
 ## Taxidermist
 _Suggested By_: Horselover Fat\
 The Taxidermist is a member of the traitor team whose goal is to use their taxidermy kit on a corpse to make it impossible to identify.
