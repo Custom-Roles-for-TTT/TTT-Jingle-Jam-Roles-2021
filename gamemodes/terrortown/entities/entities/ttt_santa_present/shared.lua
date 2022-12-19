@@ -18,7 +18,7 @@ if SERVER then
     util.AddNetworkString("TTT_SantaPresentNotify")
 
     local function CallShopHooks(isequip, id, ply)
-        hook.Call("TTTOrderedEquipment", GAMEMODE, ply, id, isequip)
+        hook.Call("TTTOrderedEquipment", GAMEMODE, ply, id, isequip, true)
         ply:AddBought(id)
 
         net.Start("TTT_BoughtItem")
