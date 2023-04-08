@@ -1,3 +1,11 @@
+local hook = hook
+local net = net
+local player = player
+local string = string
+local table = table
+
+local StringUpper = string.upper
+
 local ROLE = {}
 
 ROLE.nameraw = "communist"
@@ -49,6 +57,11 @@ ROLE.translations = {
 RegisterRole(ROLE)
 
 if CLIENT then
+
+    ----------------
+    -- WIN CHECKS --
+    ----------------
+
     hook.Add("TTTSyncWinIDs", "Communist_TTTSyncWinIDs", function()
         WIN_COMMUNIST = WINS_BY_ROLE[ROLE_COMMUNIST]
     end)
@@ -67,27 +80,26 @@ if CLIENT then
             end})
     end)
 
-    hook.Add("TTTTutorialRoleText", "Communist_TTTTutorialRoleText", function(role, titleLabel)
-        if role == ROLE_COMMUNIST then
-            local roleColor = GetRoleTeamColor(ROLE_TEAM_INDEPENDENT)
-            local traitorColor = ROLE_COLORS[ROLE_TRAITOR]
-            local html = "The " .. ROLE_STRINGS[ROLE_COMMUNIST] .. " is an <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>independent</span> role whose goal is to convert all living players <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>to communism</span> using the <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>Communist Manifesto</span>."
+    -- Add the communist to the secondary "wins" list when they lose and show a different message
+    hook.Add("TTTScoringSecondaryWins", "Communist_TTTScoringSecondaryWins", function(wintype, secondary_wins)
+        if wintype == WIN_COMMUNIST then return end
 
-            local freeze = GetGlobalBool("ttt_communist_convert_freeze", true) and "" or " NOT"
-            html = html .. "<span style='display: block; margin-top: 10px;'>Players <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>will" .. freeze .. " be frozen</span> while being converted.</span>"
-
-            local credits = GetGlobalInt("ttt_communist_convert_credits", 1)
-            if credits > 0 then
-                local plural = ""
-                if credits > 1 then
-                    plural = "s"
-                end
-                html = html .. "<span style='display: block; margin-top: 10px;'>When a player is converted to communism, all non-" .. ROLE_STRINGS_PLURAL[ROLE_COMMUNIST] .. " will be <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>given " .. credits .. " credit" .. plural .. "</span>.</span>"
+        -- Only show this message if there was a Communist in the round
+        for _, p in ipairs(player.GetAll()) do
+            if p:IsCommunist() then
+                table.insert(secondary_wins, {
+                    rol = ROLE_COMMUNIST,
+                    txt = LANG.GetTranslation("hilite_lose_communist"),
+                    col = ROLE_COLORS[ROLE_DETECTIVE]
+                })
+                return
             end
-
-            return html
         end
     end)
+
+    ------------
+    -- EVENTS --
+    ------------
 
     net.Receive("TTT_Communism_Converted", function(len)
         local name = net.ReadString()
@@ -109,6 +121,10 @@ if CLIENT then
         end
     end)
 
+    -------------
+    -- SCORING --
+    -------------
+
     hook.Add("TTTScoringWinTitle", "Communist_ScoringWinTitle", function(wintype, wintitles, title, secondaryWinRole)
         if wintype == WIN_COMMUNIST then
             return { txt = "hilite_win_communist", params = { role = ROLE_STRINGS[ROLE_COMMUNIST]:upper() }, c = ROLE_COLORS[ROLE_COMMUNIST] }
@@ -122,20 +138,83 @@ if CLIENT then
         end
     end)
 
-    -- Add the communist to the secondary "wins" list when they lose and show a different message
-    hook.Add("TTTScoringSecondaryWins", "Communist_TTTScoringSecondaryWins", function(wintype, secondary_wins)
-        if wintype == WIN_COMMUNIST then return end
+    ---------------
+    -- TARGET ID --
+    ---------------
 
-        -- Only show this message if there was a Communist in the round
-        for _, p in ipairs(player.GetAll()) do
-            if p:IsCommunist() then
-                table.insert(secondary_wins, {
-                    rol = ROLE_COMMUNIST,
-                    txt = LANG.GetTranslation("hilite_lose_communist"),
-                    col = ROLE_COLORS[ROLE_DETECTIVE]
-                })
-                return
+    -- Show the correct role icon for communists
+    hook.Add("TTTTargetIDPlayerRoleIcon", "Communist_TTTTargetIDPlayerRoleIcon", function(ply, cli, role, noz, colorRole, hideBeggar, showJester, hideBodysnatcher)
+        if cli:IsActiveCommunist() and ply:IsActiveCommunist() then
+            return ROLE_COMMUNIST, true
+        end
+    end)
+
+    -- Show the correct target ring for communists
+    hook.Add("TTTTargetIDPlayerRing", "Communist_TTTTargetIDPlayerRing", function(ent, cli, ringVisible)
+        if not IsPlayer(ent) then return end
+
+        if cli:IsActiveCommunist() and ent:IsActiveCommunist() then
+            return true, ROLE_COLORS_RADAR[ROLE_COMMUNIST]
+        end
+    end)
+
+    -- Show the correct role name for communists
+    hook.Add("TTTTargetIDPlayerText", "Communist_TTTTargetIDPlayerText", function(ent, cli, text, col)
+        if not IsPlayer(ent) then return end
+
+        if cli:IsActiveCommunist() and ent:IsActiveCommunist() then
+            return StringUpper(ROLE_STRINGS[ROLE_COMMUNIST]), ROLE_COLORS_RADAR[ROLE_COMMUNIST]
+        end
+    end)
+
+    ROLE_IS_TARGETID_OVERRIDDEN[ROLE_COMMUNIST] = function(ply, target, showJester)
+        if not IsPlayer(target) then return end
+
+        -- Override all three pieces
+        if ply:IsActiveCommunist() and target:IsActiveCommunist() then
+            ------ icon, ring, text
+            return true, true, true
+        end
+    end
+
+    ----------------
+    -- SCOREBOARD --
+    ----------------
+
+    hook.Add("TTTScoreboardPlayerRole", "Communist_TTTScoreboardPlayerRole", function(ply, cli, color, roleFileName)
+        if cli:IsActiveCommunist() and ply:IsActiveCommunist() then
+            return ROLE_COLORS_SCOREBOARD[ROLE_COMMUNIST], ROLE_STRINGS_SHORT[ROLE_COMMUNIST]
+        end
+    end)
+
+    ROLE_IS_SCOREBOARD_INFO_OVERRIDDEN[ROLE_COMMUNIST] = function(ply, target)
+        ------ name,  role
+        return false, ply:IsActiveCommunist() and target:IsActiveCommunist()
+    end
+
+    --------------
+    -- TUTORIAL --
+    --------------
+
+    hook.Add("TTTTutorialRoleText", "Communist_TTTTutorialRoleText", function(role, titleLabel)
+        if role == ROLE_COMMUNIST then
+            local roleColor = GetRoleTeamColor(ROLE_TEAM_INDEPENDENT)
+            local traitorColor = ROLE_COLORS[ROLE_TRAITOR]
+            local html = "The " .. ROLE_STRINGS[ROLE_COMMUNIST] .. " is an <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>independent</span> role whose goal is to convert all living players <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>to communism</span> using the <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>Communist Manifesto</span>."
+
+            local freeze = GetGlobalBool("ttt_communist_convert_freeze", true) and "" or " NOT"
+            html = html .. "<span style='display: block; margin-top: 10px;'>Players <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>will" .. freeze .. " be frozen</span> while being converted.</span>"
+
+            local credits = GetGlobalInt("ttt_communist_convert_credits", 1)
+            if credits > 0 then
+                local plural = ""
+                if credits > 1 then
+                    plural = "s"
+                end
+                html = html .. "<span style='display: block; margin-top: 10px;'>When a player is converted to communism, all non-" .. ROLE_STRINGS_PLURAL[ROLE_COMMUNIST] .. " will be <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>given " .. credits .. " credit" .. plural .. "</span>.</span>"
             end
+
+            return html
         end
     end)
 end
