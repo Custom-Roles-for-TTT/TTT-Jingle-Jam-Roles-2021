@@ -188,7 +188,6 @@ if SERVER then
         SetRoleMaxHealth(self)
 
         SafeRemoveEntity(boxerRagdoll)
-        boxerRagdoll = nil
         self:SetNWEntity("BoxerRagdoll", nil)
     end
 
