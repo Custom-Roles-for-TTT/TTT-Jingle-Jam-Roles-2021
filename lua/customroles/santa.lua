@@ -96,7 +96,7 @@ if CLIENT then
             surface.SetFont("TabLarge")
             surface.SetTextColor(255, 255, 255, 230)
 
-            local text = ""
+            local text
             if client:GetNWBool("SantaCannonDisabled", false) then
                 text = "Christmas Cannon: DISABLED"
             elseif GetGlobalBool("ttt_santa_random_presents", false) then

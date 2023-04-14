@@ -1,8 +1,5 @@
 max_line_length = 999
 unused_args = false
-exclude_files = {
-	"templates\\Role Addon Template\\lua\\customroles\\%NAMERAW%.lua"
-}
 -- Ignore "Loop can be executed at most once." which is inaccurately reported due to incomplete "continue" support
 ignore = { "512" }
 globals = {
@@ -618,6 +615,7 @@ globals = {
 	"PlayerMsg",
 	"PrepareRound",
 	"PreprocSearch",
+	"PrintMessage",
 	"PrintResultMessage",
 	"PrintTable",
 	"RandomPairs",
@@ -1013,7 +1011,20 @@ globals = {
 	"UpdateRoleWeaponState",
 
 	-- CR Namespaces
-	"CRHUD"
+	"CRHUD",
+
+	-- Randomat Namespaces
+	"Randomat",
+
+	-- JJ2021
+	"EVENT_COMMUNISTCONVERTED",
+	"ROLE_BOXER",
+	"ROLE_COMMUNIST",
+	"ROLE_RANDOMAN",
+	"ROLE_SANTA",
+	"ROLE_TAXIDERMIST",
+	"WIN_BOXER",
+	"WIN_COMMUNIST"
 }
 std = {
 	globals = {

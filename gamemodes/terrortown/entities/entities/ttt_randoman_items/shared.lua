@@ -19,7 +19,7 @@ end
 for i = 1, itemTotal do
     local itemID = GenerateNewEquipmentID and GenerateNewEquipmentID() or 8
 
-    -- Keeping track of what item IDs are being used as to not try to trigger a randomat when something like a radar is bought 
+    -- Keeping track of what item IDs are being used as to not try to trigger a randomat when something like a radar is bought
     if i == 1 then
         initialID = itemID
     elseif i == itemTotal then
@@ -237,7 +237,7 @@ if SERVER then
                         end
                     end
 
-                    -- Add event's category to its description 
+                    -- Add event's category to its description
                     -- There is guaranteed to be one, as moderate impact is the fallback category for an event without one
                     description = "Category: " .. Randomat:GetReadableCategory(category) .. "\n\n" .. description
                     item.desc = description
