@@ -1,17 +1,19 @@
 {
-    "title": "Jingle Jam 2021 Roles Pack (CR for TTT)",
-    "type": "ServerContent",
-    "ignore": [
-      ".git*",
-      ".vscode*",
-      "*.md",
-      "*.iml",
-      ".idea*",
-      "*.psd",
-      "*.vcproj",
-      "*.svn*",
-      "LICENSE",
-      "templates*",
-      "images*"
-    ]
-  }
+  "title": "Jingle Jam 2021 Roles Pack (CR for TTT)",
+  "type": "ServerContent",
+  "ignore": [
+    ".git*",
+    ".vscode*",
+    "*.md",
+    "*.iml",
+    ".idea*",
+    ".luacheckrc",
+    "*.psd",
+    "*.rockspec",
+    "*.vcproj",
+    "*.svn*",
+    "LICENSE",
+    "templates*",
+    "images*"
+  ]
+}
