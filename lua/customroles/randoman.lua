@@ -43,6 +43,11 @@ ROLE.convars = {
 RegisterRole(ROLE)
 
 if SERVER then
+    local categories, _ = file.Find("gamemodes/terrortown/content/materials/vgui/ttt/roles/ran/items/*.png", "THIRDPARTY")
+    for _, cat in ipairs(categories) do
+        resource.AddSingleFile("materials/vgui/ttt/roles/ran/items/" .. cat)
+    end
+
     -- Prevents auto-randomat triggering if there is a Randoman alive
     hook.Add("TTTRandomatShouldAuto", "StopAutoRandomatWithRandoman", function()
         if GetConVar("ttt_randoman_prevent_auto_randomat"):GetBool() and player.IsRoleLiving(ROLE_RANDOMAN) then return false end
