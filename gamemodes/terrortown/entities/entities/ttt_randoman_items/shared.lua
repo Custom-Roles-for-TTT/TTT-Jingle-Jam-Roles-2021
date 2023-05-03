@@ -149,108 +149,112 @@ if SERVER then
         return category
     end
 
-    -- Only update the randoman's shop if there actually is one, or if a player joins since the last round started
-    -- (In case a player is forcibly made a randoman, either through commands or a randomat)
-    local playerJoined = false
+    -- Keep track of this so the randomization only happens once per round
+    local eventsRandomized = false
 
-    hook.Add("PlayerInitialSpawn", "RandomanPlayerJoinCheck", function(ply)
-        playerJoined = true
-    end)
+    local function RandomizeEvents()
+        if eventsRandomized then return end
 
-    hook.Add("TTTBeginRound", "UpdateRandomanItems", function()
-        if playerJoined or player.IsRoleLiving(ROLE_RANDOMAN) then
-            table.Empty(chosenEvents)
-            local guaranteedItemCount = 0
-            local guaranteedItemTotal = #guaranteedEventCategories
-            local forcedItemCount = 0
-            local forcedItemTotal = #forcedEvents
-            net.Start("UpdateRandomanItems")
+        table.Empty(chosenEvents)
+        local guaranteedItemCount = 0
+        local guaranteedItemTotal = #guaranteedEventCategories
+        local forcedItemCount = 0
+        local forcedItemTotal = #forcedEvents
+        net.Start("UpdateRandomanItems")
 
-            for _, item in ipairs(EquipmentItems[ROLE_RANDOMAN]) do
-                -- Check that it is using one of the IDs used by a randoman item
-                if IsRandomanItem(item.id) then
-                    local event
-                    local category
+        for _, item in ipairs(EquipmentItems[ROLE_RANDOMAN]) do
+            -- Check that it is using one of the IDs used by a randoman item
+            if IsRandomanItem(item.id) then
+                local event
+                local category
 
-                    -- First put all guaranteed events in
-                    if guaranteedItemCount < guaranteedItemTotal then
-                        guaranteedItemCount = guaranteedItemCount + 1
-                        category = guaranteedEventCategories[guaranteedItemCount]
-                        local events = eventsByCategory[category]
-                        table.Shuffle(events)
+                -- First put all guaranteed events in
+                if guaranteedItemCount < guaranteedItemTotal then
+                    guaranteedItemCount = guaranteedItemCount + 1
+                    category = guaranteedEventCategories[guaranteedItemCount]
+                    local events = eventsByCategory[category]
+                    table.Shuffle(events)
 
-                        -- Find a random event in that category that is allowed to run
-                        for _, categoryEvent in ipairs(events) do
-                            if IsEventAllowed(categoryEvent) and Randomat:CanEventRun(categoryEvent) then
-                                event = categoryEvent
-                                break
-                            end
+                    -- Find a random event in that category that is allowed to run
+                    for _, categoryEvent in ipairs(events) do
+                        if IsEventAllowed(categoryEvent) and Randomat:CanEventRun(categoryEvent) then
+                            event = categoryEvent
+                            break
                         end
                     end
+                end
 
-                    -- If we haven't yet found an event, make sure we include the onces we always want to show
-                    if not event and forcedItemCount < forcedItemTotal then
-                        forcedItemCount = forcedItemCount + 1
-                        event = Randomat.Events[forcedEvents[forcedItemCount]]
+                -- If we haven't yet found an event, make sure we include the onces we always want to show
+                if not event and forcedItemCount < forcedItemTotal then
+                    forcedItemCount = forcedItemCount + 1
+                    event = Randomat.Events[forcedEvents[forcedItemCount]]
 
-                        if not IsEventAllowed(event) or not Randomat:CanEventRun(event) then
-                            event = nil
-                        else
-                            category = GetCategory(event)
-                        end
-                    end
-
-                    -- If no valid event has been found so far, find a completely random one
-                    if not event then
-                        event = Randomat:GetRandomEvent(true, IsEventAllowed)
+                    if not IsEventAllowed(event) or not Randomat:CanEventRun(event) then
+                        event = nil
+                    else
                         category = GetCategory(event)
                     end
-
-                    -- Update the icon and send the displayed category to the client
-                    item.material = "vgui/ttt/roles/ran/items/" .. category .. ".png"
-                    net.WriteString(category)
-                    table.insert(chosenEvents, event.id)
-                    -- Update randomat ID
-                    item.eventid = event.id
-                    net.WriteString(event.id)
-                    -- Update randomat name
-                    local name = Randomat:GetEventTitle(event)
-                    local longName = name
-                    local descriptionName = false
-
-                    -- Puts the name of the randomat in the description if it is too long
-                    if string.len(name) > 35 then
-                        name = string.Left(name, 32) .. "..."
-                        descriptionName = true
-                    end
-
-                    item.name = name
-                    net.WriteString(name)
-                    -- Update randomat description
-                    local description = "'" .. longName .. "' is triggered when you buy this."
-
-                    if (event.ExtDescription and #event.ExtDescription > 0) or (event.Description and #event.Description > 0) then
-                        description = event.ExtDescription or event.Description
-
-                        if descriptionName then
-                            description = longName .. "\n\n" .. description
-                        end
-                    end
-
-                    -- Add event's category to its description
-                    -- There is guaranteed to be one, as moderate impact is the fallback category for an event without one
-                    description = "Category: " .. Randomat:GetReadableCategory(category) .. "\n\n" .. description
-                    item.desc = description
-                    net.WriteString(description)
                 end
-            end
 
-            net.Broadcast()
+                -- If no valid event has been found so far, find a completely random one
+                if not event then
+                    event = Randomat:GetRandomEvent(true, IsEventAllowed)
+                    category = GetCategory(event)
+                end
+
+                -- Update the icon and send the displayed category to the client
+                item.material = "vgui/ttt/roles/ran/items/" .. category .. ".png"
+                net.WriteString(category)
+                table.insert(chosenEvents, event.id)
+                -- Update randomat ID
+                item.eventid = event.id
+                net.WriteString(event.id)
+                -- Update randomat name
+                local name = Randomat:GetEventTitle(event)
+                local longName = name
+                local descriptionName = false
+
+                -- Puts the name of the randomat in the description if it is too long
+                if string.len(name) > 35 then
+                    name = string.Left(name, 32) .. "..."
+                    descriptionName = true
+                end
+
+                item.name = name
+                net.WriteString(name)
+                -- Update randomat description
+                local description = "'" .. longName .. "' is triggered when you buy this."
+
+                if (event.ExtDescription and #event.ExtDescription > 0) or (event.Description and #event.Description > 0) then
+                    description = event.ExtDescription or event.Description
+
+                    if descriptionName then
+                        description = longName .. "\n\n" .. description
+                    end
+                end
+
+                -- Add event's category to its description
+                -- There is guaranteed to be one, as moderate impact is the fallback category for an event without one
+                description = "Category: " .. Randomat:GetReadableCategory(category) .. "\n\n" .. description
+                item.desc = description
+                net.WriteString(description)
+            end
         end
 
-        -- Reset the table of randomats triggered by the randoman each round
+        net.Broadcast()
+    end
+
+    -- Make sure the events have been randomized since they were last used if someone is made a randoman
+    hook.Add("TTTPlayerRoleChanged", "Randoman_TTTPlayerRoleChanged", function(ply, oldRole, newRole)
+        if oldRole == newRole then return end
+        if newRole ~= ROLE_RANDOMAN then return end
+        RandomizeEvents()
+    end)
+
+    -- Reset the table of randomats triggered by the randoman each round
+    hook.Add("TTTPrepareRound", "UpdateRandomanItems", function()
         table.Empty(triggeredEvents)
-        playerJoined = false
+        eventsRandomized = false
     end)
 
     -- Greys out randomats if an event's condition isn't met anymore, because something changed in the round, for anyone who is a randoman
