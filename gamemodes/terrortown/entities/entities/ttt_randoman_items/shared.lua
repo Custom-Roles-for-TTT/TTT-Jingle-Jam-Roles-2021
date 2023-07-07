@@ -85,7 +85,7 @@ if SERVER then
                 local owner = self:GetOwner()
 
                 if IsValid(owner) and owner:IsPlayer() then
-                    owner:PrintMessage(HUD_PRINTCENTER, "This could be used as a gift for someone...")
+                    owner:PrintMessage(HUD_PRINTCENTER, "This randomat is used up! But someone might still want it...")
                 end
             end
         end
