@@ -7,7 +7,7 @@ ROLE.nameshort = "ran"
 ROLE.desc = [[You are {role}!
 You're {adetective}, but you can buy randomats instead of {detective} items!]]
 ROLE.team = ROLE_TEAM_DETECTIVE
-ROLE.shop = {}
+ROLE.shop = {"weapon_ttt_randomat"}
 ROLE.loadout = {}
 ROLE.startingcredits = 1
 ROLE.selectionpredicate = function() return Randomat and type(Randomat.IsInnocentTeam) == "function" end
