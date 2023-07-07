@@ -76,12 +76,22 @@ if SERVER then
         end
     end)
 
-    -- Detecting if the randoman has bought anything
     local boughtAsRandoman = {}
-
+    
     hook.Add("TTTOrderedEquipment", "RandomanBoughtItem", function(ply, id, is_item, from_randomat)
-        if ply:IsRandoman() and not from_randomat then
-            boughtAsRandoman[ply] = true
+        if ply:IsRandoman() then
+            -- Let the randoman be able to drop the randomat SWEP
+            if id == "weapon_ttt_randomat" then
+                local SWEP = ply:GetWeapon("weapon_ttt_randomat")
+                if IsValid(SWEP) then
+                    SWEP.AllowDrop = true
+                end
+            end
+            
+            -- Detecting if the randoman has bought anything
+            if not from_randomat then
+                boughtAsRandoman[ply] = true
+            end
         end
     end)
 
