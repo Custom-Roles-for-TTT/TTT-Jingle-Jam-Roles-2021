@@ -7,7 +7,9 @@ ROLE.nameshort = "ran"
 ROLE.desc = [[You are {role}!
 You're {adetective}, but you can buy randomats instead of {detective} items!]]
 ROLE.team = ROLE_TEAM_DETECTIVE
+
 ROLE.shop = {"weapon_ttt_randomat"}
+
 ROLE.loadout = {}
 ROLE.startingcredits = 1
 ROLE.selectionpredicate = function() return Randomat and type(Randomat.IsInnocentTeam) == "function" end
@@ -50,6 +52,7 @@ RegisterRole(ROLE)
 
 if SERVER then
     local categories, _ = file.Find("gamemodes/terrortown/content/materials/vgui/ttt/roles/ran/items/*.png", "THIRDPARTY")
+
     for _, cat in ipairs(categories) do
         resource.AddSingleFile("materials/vgui/ttt/roles/ran/items/" .. cat)
     end
@@ -70,24 +73,23 @@ if SERVER then
         if not blockedEvents[event.Id] then return end
 
         for _, ply in ipairs(player.GetAll()) do
-            if ply:IsRandoman() then
-                return false, "There is " .. ROLE_STRINGS_EXT[ROLE_RANDOMAN] .. " in the round and this event " .. blockedEvents[event.Id]
-            end
+            if ply:IsRandoman() then return false, "There is " .. ROLE_STRINGS_EXT[ROLE_RANDOMAN] .. " in the round and this event " .. blockedEvents[event.Id] end
         end
     end)
 
     local boughtAsRandoman = {}
-    
+
     hook.Add("TTTOrderedEquipment", "RandomanBoughtItem", function(ply, id, is_item, from_randomat)
         if ply:IsRandoman() then
             -- Let the randoman be able to drop the randomat SWEP
             if id == "weapon_ttt_randomat" then
                 local SWEP = ply:GetWeapon("weapon_ttt_randomat")
+
                 if IsValid(SWEP) then
                     SWEP.AllowDrop = true
                 end
             end
-            
+
             -- Detecting if the randoman has bought anything
             if not from_randomat then
                 boughtAsRandoman[ply] = true
@@ -100,7 +102,7 @@ if SERVER then
     end)
 
     -- Triggering a random event if the randoman dies and hasn't bought anything, and the convar is enabled
-    hook.Add("PostPlayerDeath", "RandomanDeathEventTrigger", function (ply)
+    hook.Add("PostPlayerDeath", "RandomanDeathEventTrigger", function(ply)
         if eventOnUnboughtDeathCvar:GetBool() and not boughtAsRandoman[ply] then
             Randomat:TriggerRandomEvent(ply)
             -- Just in case the randoman somehow respawns, only trigger a randomat on death once
@@ -122,12 +124,15 @@ if CLIENT then
 
             html = html .. "<span style='display: block; margin-top: 10px;'>Other players will know you are " .. ROLE_STRINGS_EXT[ROLE_DETECTIVE] .. " just by <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>looking at you</span>"
             local special_detective_mode = GetGlobalInt("ttt_detective_hide_special_mode", SPECIAL_DETECTIVE_HIDE_NONE)
+
             if special_detective_mode > SPECIAL_DETECTIVE_HIDE_NONE then
                 html = html .. ", but not what specific type of " .. ROLE_STRINGS[ROLE_DETECTIVE]
+
                 if special_detective_mode == SPECIAL_DETECTIVE_HIDE_FOR_ALL then
                     html = html .. ". <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>Not even you know what type of " .. ROLE_STRINGS[ROLE_DETECTIVE] .. " you are</span>"
                 end
             end
+
             html = html .. ".</span>"
 
             return html
