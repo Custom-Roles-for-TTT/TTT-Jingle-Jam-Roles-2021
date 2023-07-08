@@ -110,7 +110,7 @@ if SERVER then
 
     -- Triggering a random event if the randoman dies and hasn't bought anything, and the convar is enabled
     hook.Add("PostPlayerDeath", "RandomanDeathEventTrigger", function(ply)
-        if ply:IsRandoman() and eventOnUnboughtDeathCvar:GetBool() and not boughtAsRandoman[ply] then
+        if ply:IsRandoman() and GetRoundState() == ROUND_ACTIVE and eventOnUnboughtDeathCvar:GetBool() and not boughtAsRandoman[ply] then
             Randomat:TriggerRandomEvent(ply)
             -- Just in case the randoman somehow respawns, only trigger a randomat on death once
             boughtAsRandoman[ply] = true
