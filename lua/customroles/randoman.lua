@@ -87,6 +87,13 @@ if SERVER then
 
                 if IsValid(SWEP) then
                     SWEP.AllowDrop = true
+
+                    -- If the randoman drops this item, it is guaranteed to trigger "Choose an event!" on being picked up and used, which gives the player a choice of 5 randomats to trigger. This is so the randoman is able to give other players an interesting item, most notably for players that are the beggar role
+                    function SWEP:OnDrop()
+                        self.EventId = "choose"
+
+                        self.EventArgs = {false, false, nil, 5}
+                    end
                 end
             end
 
