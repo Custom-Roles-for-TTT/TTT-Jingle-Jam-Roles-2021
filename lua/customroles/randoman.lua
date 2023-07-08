@@ -23,7 +23,7 @@ CreateConVar("ttt_randoman_guaranteed_categories", "biased_innocent,fun,moderate
 
 CreateConVar("ttt_randoman_guaranteed_randomats", "", {FCVAR_NOTIFY}, "Events that will always appear in the randoma's shop, separate ids with commas.")
 
-local eventOnUnboughtDeathCvar = CreateConVar("ttt_randoman_event_on_unbought_death", 1, {FCVAR_NOTIFY}, "Whether a randomat should trigger if a randoman dies and never bought anything that round", 0, 1)
+local eventOnUnboughtDeathCvar = CreateConVar("ttt_randoman_event_on_unbought_death", 0, {FCVAR_NOTIFY}, "Whether a randomat should trigger if a randoman dies and never bought anything that round", 0, 1)
 
 ROLE.convars = {
     {
