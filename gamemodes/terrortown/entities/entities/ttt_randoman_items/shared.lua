@@ -73,24 +73,6 @@ if SERVER then
 
     local triggeredEvents = {}
 
-    local function GiveUsedRandomat(ply)
-        if not GetConVar("ttt_beggar_enabled"):GetBool() or not GetConVar("ttt_randoman_give_used_randomats"):GetBool() then return end
-        local SWEP = ply:Give("weapon_ttt_randomat")
-        if not IsValid(SWEP) then return end
-        SWEP.AllowDrop = true
-
-        -- Don't trigger a randomat on use, instead display a message
-        function SWEP:PrimaryAttack()
-            if SERVER and IsFirstTimePredicted() then
-                local owner = self:GetOwner()
-
-                if IsValid(owner) and owner:IsPlayer() then
-                    owner:PrintMessage(HUD_PRINTCENTER, "This randomat is used up! But someone might still want it...")
-                end
-            end
-        end
-    end
-
     -- Trigger a randomat event when a randoman item is bought
     hook.Add("TTTOrderedEquipment", "RandomanItemBought", function(ply, id, is_item)
         if is_item and IsRandomanItem(id) then
@@ -103,8 +85,6 @@ if SERVER then
 
             Randomat:TriggerEvent(item.eventid, ply)
             table.insert(triggeredEvents, item.eventid)
-            -- Give the randoman a "used randomat" item if the beggar (and the convar) is enabled, used for converting the beggar
-            GiveUsedRandomat(ply)
         end
     end)
 
@@ -136,6 +116,11 @@ if SERVER then
             forcedEvents = string.Explode(",", forcedEventsString)
         else
             forcedEvents = {}
+        end
+
+        -- Add the 'What did I find in my pocket?' event to the randoman's shop if the beggar is enabled
+        if not table.HasValue(forcedEvents, "pocket") and GetConVar("ttt_beggar_enabled"):GetBool() then
+            table.insert(forcedEvents, "pocket")
         end
     end)
 

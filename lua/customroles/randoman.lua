@@ -25,8 +25,6 @@ CreateConVar("ttt_randoman_guaranteed_randomats", "", {FCVAR_NOTIFY}, "Events th
 
 local eventOnUnboughtDeathCvar = CreateConVar("ttt_randoman_event_on_unbought_death", 1, {FCVAR_NOTIFY}, "Whether a randomat should trigger if a randoman dies and never bought anything that round", 0, 1)
 
-CreateConVar("ttt_randoman_give_used_randomats", 1, {FCVAR_NOTIFY}, "Whether a randoman should receive a 'used randomat' item on buying an event for converting the beggar, if the beggar is enabled")
-
 ROLE.convars = {
     {
         cvar = "ttt_randoman_banned_randomats",
@@ -47,11 +45,7 @@ ROLE.convars = {
     {
         cvar = "ttt_randoman_event_on_unbought_death",
         type = ROLE_CONVAR_TYPE_BOOL
-    },
-    {
-        cvar = "ttt_randoman_give_used_randomats",
-        type = ROLE_CONVAR_TYPE_BOOL
-    },
+    }
 }
 
 RegisterRole(ROLE)
