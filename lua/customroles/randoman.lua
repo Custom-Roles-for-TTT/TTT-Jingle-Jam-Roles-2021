@@ -104,8 +104,16 @@ if SERVER then
         end
     end)
 
-    hook.Add("TTTPrepareRound", "RandomanBoughtItemReset", function()
+    local autoRandomatExists = false
+
+    hook.Add("TTTPrepareRound", "RandomanReset", function()
         table.Empty(boughtAsRandoman)
+        SetGlobalBool("ttt_randoman_prevent_auto_randomat", GetConVar("ttt_randoman_prevent_auto_randomat"):GetBool())
+
+        if autoRandomatExists or ConVarExists("ttt_randomat_auto") then
+            autoRandomatExists = true
+            SetGlobalBool("ttt_randomat_auto", GetConVar("ttt_randomat_auto"):GetBool())
+        end
     end)
 
     -- Triggering a random event if the randoman dies and hasn't bought anything, and the convar is enabled
@@ -125,7 +133,7 @@ if CLIENT then
             local teamColor = GetRoleTeamColor(ROLE_TEAM_INNOCENT)
             local html = "The " .. ROLE_STRINGS[ROLE_RANDOMAN] .. " is a " .. ROLE_STRINGS[ROLE_DETECTIVE] .. " and a member of the <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>innocent team</span> who is able to buy randomat events, rather than <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>" .. ROLE_STRINGS[ROLE_DETECTIVE] .. "</span> items. <br><br>The available randomat events <span style='color: rgb(" .. teamColor.r .. ", " .. teamColor.g .. ", " .. teamColor.b .. ")'>change each round</span>, and are shared between everyone who is a " .. ROLE_STRINGS[ROLE_RANDOMAN] .. ".<br><br>Some randomat events <span style='color: rgb(" .. teamColor.r .. ", " .. teamColor.g .. ", " .. teamColor.b .. ")'>cannot be bought</span>, such as ones that are supposed to start secretly."
 
-            if preventAutoRandomatCvar:GetBool() and ConVarExists("ttt_randomat_auto") and GetConVar("ttt_randomat_auto"):GetBool() then
+            if GetGlobalBool("ttt_randoman_prevent_auto_randomat") and GetGlobalBool("ttt_randomat_auto") then
                 html = html .. "<br><br>If a " .. ROLE_STRINGS[ROLE_RANDOMAN] .. " spawns at the start of the round, <span style='color: rgb(" .. teamColor.r .. ", " .. teamColor.g .. ", " .. teamColor.b .. ")'>no randomat automatically triggers</span>."
             end
 
