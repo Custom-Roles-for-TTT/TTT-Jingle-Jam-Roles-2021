@@ -25,6 +25,10 @@ CreateConVar("ttt_randoman_guaranteed_randomats", "", {FCVAR_NOTIFY}, "Events th
 
 local eventOnUnboughtDeathCvar = CreateConVar("ttt_randoman_event_on_unbought_death", 0, {FCVAR_NOTIFY}, "Whether a randomat should trigger if a randoman dies and never bought anything that round", 0, 1)
 
+local chooseEventOnDropCvar = CreateConVar("ttt_randoman_choose_event_on_drop", 1, {FCVAR_NOTIFY}, "Whether the held randomat item should always trigger \"Choose an event!\" after being bought by a randoman and dropped on the ground")
+
+CreateConVar("ttt_randoman_guarantee_pockets_event", 1, {FCVAR_NOTIFY}, "Whether the \"What did I find in my pocket?\" event should always be available in the randoman's shop while the beggar role is enabled")
+
 ROLE.convars = {
     {
         cvar = "ttt_randoman_banned_randomats",
@@ -88,11 +92,15 @@ if SERVER then
                 if IsValid(SWEP) then
                     SWEP.AllowDrop = true
 
-                    -- If the randoman drops this item, it is guaranteed to trigger "Choose an event!" on being picked up and used, which gives the player a choice of 5 randomats to trigger. This is so the randoman is able to give other players an interesting item, most notably for players that are the beggar role
-                    function SWEP:OnDrop()
-                        self.EventId = "choose"
+                    -- If the convar is enabled and the randoman drops this item, it is guaranteed to trigger "Choose an event!" on being picked up and used,
+                    -- which gives the player a choice of 5 randomats to trigger.
+                    -- This is so the randoman is able to give other players an interesting item, most notably for players that are the beggar role
+                    if chooseEventOnDropCvar:GetBool() then
+                        function SWEP:OnDrop()
+                            self.EventId = "choose"
 
-                        self.EventArgs = {false, false, nil, 5}
+                            self.EventArgs = {false, false, nil, 5}
+                        end
                     end
                 end
             end

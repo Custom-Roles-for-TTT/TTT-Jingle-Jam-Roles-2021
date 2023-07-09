@@ -118,8 +118,8 @@ if SERVER then
             forcedEvents = {}
         end
 
-        -- Add the 'What did I find in my pocket?' event to the randoman's shop if the beggar is enabled
-        if not table.HasValue(forcedEvents, "pocket") and GetConVar("ttt_beggar_enabled"):GetBool() then
+        -- Add the 'What did I find in my pocket?' event to the randoman's shop if the beggar and convar is enabled
+        if not table.HasValue(forcedEvents, "pocket") and GetConVar("ttt_beggar_enabled"):GetBool() and GetConVar("ttt_randoman_guarantee_pockets_event"):GetBool() then
             table.insert(forcedEvents, "pocket")
         end
     end)
