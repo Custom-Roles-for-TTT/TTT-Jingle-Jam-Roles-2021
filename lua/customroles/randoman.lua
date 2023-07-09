@@ -115,6 +115,7 @@ if SERVER then
                             self.EventId = "choose"
                             -- Vote, DeadCanVote, VotePredicate, ChoiceCount
                             self.EventArgs = {false, false, nil, chooseEventOnDropCountCvar:GetInt()}
+                            self.EventSilent = true
                         end
                     end
                 end
