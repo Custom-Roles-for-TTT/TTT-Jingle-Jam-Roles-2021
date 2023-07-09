@@ -93,7 +93,7 @@ if SERVER then
     local guaranteedEventCategories = {}
     local forcedEvents = {}
 
-    -- Update the banned randomats list, and guarantee 'What did I find in my pocket?' if the beggar is enabled.
+    -- Update the banned randomats list
     -- This hook is called repeatedly, to allow for changing the convars round-to-round
     hook.Add("TTTUpdateRoleState", "UpdateBannedRandomanEvents", function()
         local bannedEventsString = GetConVar("ttt_randoman_banned_randomats"):GetString()
@@ -118,8 +118,8 @@ if SERVER then
             forcedEvents = {}
         end
 
-        -- Add the 'What did I find in my pocket?' event to the randoman's shop if the beggar is enabled, and they don't already have access to the parasite cure
-        if not table.HasValue(forcedEvents, "pocket") and GetConVar("ttt_beggar_enabled"):GetBool() and not GetConVar("ttt_parasite_enabled"):GetBool() then
+        -- Add the 'What did I find in my pocket?' event to the randoman's shop if the beggar and convar is enabled
+        if not table.HasValue(forcedEvents, "pocket") and GetConVar("ttt_beggar_enabled"):GetBool() and GetConVar("ttt_randoman_guarantee_pockets_event"):GetBool() then
             table.insert(forcedEvents, "pocket")
         end
     end)
@@ -154,7 +154,6 @@ if SERVER then
 
     local function RandomizeEvents()
         if eventsRandomized then return end
-
         table.Empty(chosenEvents)
         local guaranteedItemCount = 0
         local guaranteedItemTotal = #guaranteedEventCategories

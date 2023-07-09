@@ -52,6 +52,9 @@ ttt_randoman_prevent_auto_randomat   1    // Prevent auto-randomat triggering if
 ttt_randoman_guaranteed_categories   biased_innocent,fun,moderateimpact    // A randomat from these categories is guaranteed be in the randoman's shop, separate categories with commas.
 // Categories: biased_innocent, biased_traitor, biased_zombie, biased, deathtrigger, entityspawn, eventtrigger, fun, gamemode, item, largeimpact, moderateimpact, rolechange, smallimpact, spectator, stats
 ttt_randoman_guaranteed_randomats    ""   // These events are guaranteed be in the randoman's shop, separate event IDs with commas.
+ttt_randoman_event_on_unbought_death 0    // Whether a randomat should trigger if a randoman dies and never bought anything that round
+ttt_randoman_choose_event_on_drop    1    // Whether the held randomat item should always trigger "Choose an event!" after being bought by a randoman and dropped on the ground
+ttt_randoman_guarantee_pockets_event 1    // Whether the "What did I find in my pocket?" event should always be available in the randoman's shop while the beggar role is enabled
 ```
 
 ## Santa
