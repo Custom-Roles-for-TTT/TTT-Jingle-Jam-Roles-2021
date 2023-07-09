@@ -25,9 +25,11 @@ CreateConVar("ttt_randoman_guaranteed_randomats", "", {FCVAR_NOTIFY}, "Events th
 
 local eventOnUnboughtDeathCvar = CreateConVar("ttt_randoman_event_on_unbought_death", 0, {FCVAR_NOTIFY}, "Whether a randomat should trigger if a randoman dies and never bought anything that round", 0, 1)
 
-local chooseEventOnDropCvar = CreateConVar("ttt_randoman_choose_event_on_drop", 1, {FCVAR_NOTIFY}, "Whether the held randomat item should always trigger \"Choose an event!\" after being bought by a randoman and dropped on the ground")
+local chooseEventOnDropCvar = CreateConVar("ttt_randoman_choose_event_on_drop", 1, {FCVAR_NOTIFY}, "Whether the held randomat item should always trigger \"Choose an event!\" after being bought by a randoman and dropped on the ground", 0, 1)
 
-CreateConVar("ttt_randoman_guarantee_pockets_event", 1, {FCVAR_NOTIFY}, "Whether the \"What did I find in my pocket?\" event should always be available in the randoman's shop while the beggar role is enabled")
+local chooseEventOnDropCountCvar = CreateConVar("ttt_randoman_choose_event_on_drop_count", 5, {FCVAR_NOTIFY}, "The number of events a player should be able to choose from when using a dropped randomat", 1, 10)
+
+CreateConVar("ttt_randoman_guarantee_pockets_event", 1, {FCVAR_NOTIFY}, "Whether the \"What did I find in my pocket?\" event should always be available in the randoman's shop while the beggar role is enabled", 0, 1)
 
 ROLE.convars = {
     {
@@ -49,6 +51,19 @@ ROLE.convars = {
     {
         cvar = "ttt_randoman_event_on_unbought_death",
         type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_randoman_choose_event_on_drop",
+        type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_randoman_guarantee_pockets_event",
+        type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_randoman_choose_event_on_drop_count",
+        type = ROLE_CONVAR_TYPE_NUM,
+        decimal = 0
     }
 }
 
@@ -98,8 +113,8 @@ if SERVER then
                     if chooseEventOnDropCvar:GetBool() then
                         function SWEP:OnDrop()
                             self.EventId = "choose"
-
-                            self.EventArgs = {false, false, nil, 5}
+                            -- Vote, DeadCanVote, VotePredicate, ChoiceCount
+                            self.EventArgs = {false, false, nil, chooseEventOnDropCountCvar:GetInt()}
                         end
                     end
                 end
