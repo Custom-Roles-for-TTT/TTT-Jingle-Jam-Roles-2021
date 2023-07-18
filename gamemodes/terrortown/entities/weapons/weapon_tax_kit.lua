@@ -56,7 +56,7 @@ local zap = Sound("ambient/energy/zap7.wav")
 SWEP.Kind = WEAPON_ROLE
 
 SWEP.UseHands = true
-SWEP.ViewModel = "models/weapons/v_c4.mdl"
+SWEP.ViewModel = "models/weapons/cstrike/c_c4.mdl"
 SWEP.WorldModel = "models/weapons/w_c4.mdl"
 
 SWEP.AutoSpawnable = false
