@@ -473,7 +473,7 @@ if CLIENT then
             html = html .. "<span style='display: block; margin-top: 10px;'>When only one other team remains, a voice will <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>announce the start of the final fight</span>, alerting the other players that the " .. ROLE_STRINGS[ROLE_BOXER] .. " is out there.</span>"
 
             -- Hide when one team remaining
-            if GetGlobalBool("ttt_clown_hide_when_active", false) then
+            if GetGlobalBool("ttt_boxer_hide_when_active", false) then
                 html = html .. "<span style='display: block; margin-top: 10px;'>After the final fight is announced, they are <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>hidden</span> from players who could normally <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>see them through walls</span>.</span>"
             end
 
