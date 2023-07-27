@@ -146,7 +146,7 @@ if SERVER then
         self:DrawWorldModel(false)
 
         -- Timer to revive
-        local duration = knockout_duration:GetInt()
+        local duration = boxer_knockout_duration:GetInt()
         self:SetNWInt("BoxerKnockoutEndTime", CurTime() + duration)
         timer.Create("BoxerKnockout_" .. self:SteamID64(), duration, 1, function()
             if not self:GetNWBool("BoxerKnockedOut", false) then return end
