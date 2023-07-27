@@ -33,8 +33,8 @@ if SERVER then
 
         ent:TakeDamage(ent:Health(), owner, self)
         self.lifetime = CurTime() + 3 -- Leave the coal around for a few more seconds then remove it
-        if ent:IsTraitorTeam() or (ent:IsJesterTeam() and GetGlobalBool("ttt_santa_jesters_are_naughty", false)) or (ent:IsIndependentTeam() and GetGlobalBool("ttt_santa_independents_are_naughty", true)) then
-            if not GetGlobalBool("ttt_santa_random_presents", false) then
+        if ent:IsTraitorTeam() or (ent:IsJesterTeam() and GetConVar("ttt_santa_jesters_are_naughty"):GetBool()) or (ent:IsIndependentTeam() and GetConVar("ttt_santa_independents_are_naughty"):GetBool()) then
+            if not GetConVar("ttt_santa_random_presents"):GetBool() then
                 owner:SetCredits(1)
             end
             owner:PrintMessage(HUD_PRINTTALK, ent:Nick() .. " was naughty and your ammo has been refunded.")

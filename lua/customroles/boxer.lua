@@ -58,6 +58,12 @@ ROLE.translations = {
 
 RegisterRole(ROLE)
 
+local boxer_speed_bonus = CreateConVar("ttt_boxer_speed_bonus", "0.35", FCVAR_REPLICATED, "Percent bonus to speed while the boxer has their gloves out", 0.0, 1.0)
+local boxer_drop_chance = CreateConVar("ttt_boxer_drop_chance", "0.33", FCVAR_REPLICATED, "Percent chance a punched player will drop weapon", 0.0, 1.0)
+local boxer_knockout_chance = CreateConVar("ttt_boxer_knockout_chance", "0.33", FCVAR_REPLICATED, "Percent chance a punched player will get knocked out", 0.0, 1.0)
+local boxer_knockout_duration = CreateConVar("ttt_boxer_knockout_duration", "10", FCVAR_REPLICATED, "Time punched player should be knocked out", 1, 60)
+local boxer_hide_when_active = CreateConVar("ttt_boxer_hide_when_active", "0", FCVAR_REPLICATED, "Whether to hide the boxer once the fight has started")
+
 if SERVER then
     AddCSLuaFile()
 
@@ -66,12 +72,6 @@ if SERVER then
     resource.AddSingleFile("sound/fight.wav")
     resource.AddSingleFile("sound/knockout.mp3")
     resource.AddSingleFile("sound/scream.mp3")
-
-    local speed_bonus = CreateConVar("ttt_boxer_speed_bonus", "0.35", FCVAR_NONE, "Percent bonus to speed while the boxer has their gloves out", 0.0, 1.0)
-    local drop_chance = CreateConVar("ttt_boxer_drop_chance", "0.33", FCVAR_NONE, "Percent chance a punched player will drop weapon", 0.0, 1.0)
-    local knockout_chance = CreateConVar("ttt_boxer_knockout_chance", "0.33", FCVAR_NONE, "Percent chance a punched player will get knocked out", 0.0, 1.0)
-    local knockout_duration = CreateConVar("ttt_boxer_knockout_duration", "10", FCVAR_NONE, "Time punched player should be knocked out", 1, 60)
-    local hide_when_active = CreateConVar("ttt_boxer_hide_when_active", "0", FCVAR_NONE, "Whether to hide the boxer once the fight has started")
 
     local knockout = Sound("knockout.mp3")
     local plymeta = FindMetaTable("Player")
@@ -146,7 +146,7 @@ if SERVER then
         self:DrawWorldModel(false)
 
         -- Timer to revive
-        local duration = knockout_duration:GetInt()
+        local duration = boxer_knockout_duration:GetInt()
         self:SetNWInt("BoxerKnockoutEndTime", CurTime() + duration)
         timer.Create("BoxerKnockout_" .. self:SteamID64(), duration, 1, function()
             if not self:GetNWBool("BoxerKnockedOut", false) then return end
@@ -265,14 +265,6 @@ if SERVER then
         end
     end)
 
-    hook.Add("TTTSyncGlobals", "Boxer_TTTSyncGlobals", function()
-        SetGlobalFloat("ttt_boxer_speed_bonus", speed_bonus:GetFloat())
-        SetGlobalFloat("ttt_boxer_drop_chance", drop_chance:GetFloat())
-        SetGlobalFloat("ttt_boxer_knockout_chance", knockout_chance:GetFloat())
-        SetGlobalInt("ttt_boxer_knockout_duration", knockout_duration:GetInt())
-        SetGlobalBool("ttt_boxer_hide_when_active", hide_when_active:GetBool())
-    end)
-
     -- Win conditions
 
     -- The boxer wins if they are the only ones left alive or conscious
@@ -349,7 +341,7 @@ if CLIENT then
 
     hook.Add("TTTUpdateRoleState", "Boxer_TTTUpdateRoleState", function()
         client = LocalPlayer()
-        hide_when_active = GetGlobalBool("ttt_boxer_hide_when_active", false)
+        hide_when_active = boxer_hide_when_active:GetBool()
     end)
 
     -- Win condition and events
@@ -434,8 +426,8 @@ if CLIENT then
             local html =  "The " .. ROLE_STRINGS[ROLE_BOXER] .. " is a <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>jester</span> role whose goal is to knock out all of the living players."
 
             -- Knockout and Weapon Drop chance
-            local drop_chance = GetGlobalFloat("ttt_boxer_drop_chance", 0.33)
-            local knockout_chance = GetGlobalFloat("ttt_boxer_knockout_chance", 0.33)
+            local drop_chance = boxer_drop_chance:GetFloat()
+            local knockout_chance = boxer_knockout_chance:GetFloat()
             local canDrop = drop_chance > 0
             local canKnockout = knockout_chance > 0
             if canDrop or canKnockout then
@@ -459,11 +451,11 @@ if CLIENT then
             end
 
             -- Knockout Duration
-            local duration = GetGlobalInt("ttt_boxer_knockout_duration", 10)
+            local duration = boxer_knockout_duration:GetInt()
             html = html .. "<span style='display: block; margin-top: 10px;'>Using the secondary attack will <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>knock out</span> the players that are hit for " .. duration .. " seconds.</span>"
 
             -- Speed Bonus
-            local speed_bonus = GetGlobalFloat("ttt_boxer_speed_bonus", 0.35)
+            local speed_bonus = boxer_speed_bonus:GetFloat()
             if speed_bonus > 0 then
                 local bonus = math.Round(speed_bonus * 100)
                 html = html .. "<span style='display: block; margin-top: 10px;'>The " .. ROLE_STRINGS[ROLE_BOXER] .. " will <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>move " .. bonus .. "% faster</span> while their gloves are out.</span>"
@@ -473,7 +465,7 @@ if CLIENT then
             html = html .. "<span style='display: block; margin-top: 10px;'>When only one other team remains, a voice will <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>announce the start of the final fight</span>, alerting the other players that the " .. ROLE_STRINGS[ROLE_BOXER] .. " is out there.</span>"
 
             -- Hide when one team remaining
-            if GetGlobalBool("ttt_boxer_hide_when_active", false) then
+            if boxer_hide_when_active:GetBool() then
                 html = html .. "<span style='display: block; margin-top: 10px;'>After the final fight is announced, they are <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>hidden</span> from players who could normally <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>see them through walls</span>.</span>"
             end
 
@@ -512,24 +504,22 @@ if CLIENT then
             if not ragdoll.KnockoutNextPart then ragdoll.KnockoutNextPart = CurTime() end
             if not ragdoll.KnockoutDir then ragdoll.KnockoutDir = 0 end
             local pos = ragdoll:GetPos()
-            if ragdoll.KnockoutNextPart < CurTime() then
-                if client:GetPos():Distance(pos) <= 3000 then
-                    ragdoll.KnockoutEmitter:SetPos(pos)
-                    ragdoll.KnockoutNextPart = CurTime() + 0.02
-                    ragdoll.KnockoutDir = ragdoll.KnockoutDir + 0.25
-                    local radius = 7
-                    local vec = Vector(MathSin(ragdoll.KnockoutDir) * radius, MathCos(ragdoll.KnockoutDir) * radius, 10)
-                    local particle = ragdoll.KnockoutEmitter:Add("particle/wisp.vmt", GetHeadPos(ply, ragdoll) + vec)
-                    particle:SetVelocity(Vector(0, 0, 0))
-                    particle:SetDieTime(1)
-                    particle:SetStartAlpha(200)
-                    particle:SetEndAlpha(0)
-                    particle:SetStartSize(1)
-                    particle:SetEndSize(1)
-                    particle:SetRoll(0)
-                    particle:SetRollDelta(0)
-                    particle:SetColor(200, 230, 90)
-                end
+            if ragdoll.KnockoutNextPart < CurTime() and client:GetPos():Distance(pos) <= 3000 then
+                ragdoll.KnockoutEmitter:SetPos(pos)
+                ragdoll.KnockoutNextPart = CurTime() + 0.02
+                ragdoll.KnockoutDir = ragdoll.KnockoutDir + 0.25
+                local radius = 7
+                local vec = Vector(MathSin(ragdoll.KnockoutDir) * radius, MathCos(ragdoll.KnockoutDir) * radius, 10)
+                local particle = ragdoll.KnockoutEmitter:Add("particle/wisp.vmt", GetHeadPos(ply, ragdoll) + vec)
+                particle:SetVelocity(Vector(0, 0, 0))
+                particle:SetDieTime(1)
+                particle:SetStartAlpha(200)
+                particle:SetEndAlpha(0)
+                particle:SetStartSize(1)
+                particle:SetEndSize(1)
+                particle:SetRoll(0)
+                particle:SetRollDelta(0)
+                particle:SetColor(200, 230, 90)
             end
         elseif ragdoll.KnockoutEmitter then
             ragdoll.KnockoutEmitter:Finish()
@@ -555,7 +545,7 @@ if CLIENT then
         local diff = endTime - CurTime()
         if diff <= 0 then return end
 
-        local duration = GetGlobalInt("ttt_boxer_knockout_duration", 10)
+        local duration = boxer_knockout_duration:GetInt()
         CRHUD:PaintBar(8, x, y, width, height, colors, 1 - (diff / duration))
         draw.SimpleText("KNOCKED OUT", "KnockedOut", ScrW() / 2, y + 1, COLOR_WHITE, TEXT_ALIGN_CENTER)
     end)
@@ -600,7 +590,7 @@ end
 hook.Add("TTTSpeedMultiplier", "Boxer_TTTSpeedMultiplier", function(ply, mults)
     local wep = ply:GetActiveWeapon()
     if IsValid(wep) and WEPS.GetClass(wep) == "weapon_box_gloves" then
-        local speed_bonus = 1 + GetGlobalFloat("ttt_boxer_speed_bonus", 0.35)
+        local speed_bonus = 1 + boxer_speed_bonus:GetFloat()
         table.insert(mults, speed_bonus)
     end
 end)
