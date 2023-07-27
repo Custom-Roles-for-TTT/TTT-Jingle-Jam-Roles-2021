@@ -42,7 +42,19 @@ ROLE.translations = {
 
 RegisterRole(ROLE)
 
+local santa_random_presents = CreateConVar("ttt_santa_random_presents", 0, FCVAR_REPLICATED)
+local santa_jesters_are_naughty = CreateConVar("ttt_santa_jesters_are_naughty", 1, FCVAR_REPLICATED)
+local santa_independents_are_naughty = CreateConVar("ttt_santa_independents_are_naughty", 0, FCVAR_REPLICATED)
+CreateConVar("ttt_santa_shop_sync", 1, FCVAR_REPLICATED) -- This is generated automatically later but we want it on by default so we create it here first
+
 if CLIENT then
+    local function GetReplicatedValue(onreplicated, onglobal)
+        if CRVersion("1.9.3") then
+            return onreplicated()
+        end
+        return onglobal()
+    end
+
     hook.Add("TTTTutorialRoleText", "Santa_TTTTutorialRoleText", function(role, titleLabel)
         if role == ROLE_SANTA then
             local roleColor = ROLE_COLORS[ROLE_INNOCENT]
@@ -56,7 +68,7 @@ if CLIENT then
 
             -- Gifts
             html = html .. "<span style='display: block; margin-top: 10px;'>"
-            if GetGlobalBool("ttt_santa_random_presents", false) then
+            if santa_random_presents:GetBool() then
                 html = html .. ROLE_STRINGS[ROLE_SANTA] .. " can shoot random shop items"
             else
                 html = html .. "Instead of buying items for themselves, " .. ROLE_STRINGS[ROLE_SANTA].. " can buy an item from their shop and shoot it"
@@ -69,16 +81,22 @@ if CLIENT then
             -- Ammo
             html = html .. "<span style='display: block; margin-top: 10px;'>Ammo for the <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>christmas cannon</span> is refunded whenever a player opens a gift OR a naughty ("
             html = html .. "<span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>traitor</span>"
-            if GetGlobalBool("ttt_santa_jesters_are_naughty", false) then
+            if santa_jesters_are_naughty:GetBool() then
                 html = html .. ", <span style='color: rgb(" .. jesterColor.r .. ", " .. jesterColor.g .. ", " .. jesterColor.b .. ")'>jester</span>"
             end
-            if GetGlobalBool("ttt_santa_independents_are_naughty", false) then
+            if santa_independents_are_naughty:GetBool() then
                 html = html .. ", <span style='color: rgb(" .. independentColor.r .. ", " .. independentColor.g .. ", " .. independentColor.b .. ")'>independent</span>"
             end
             html = html .. ") player is killed by coal."
 
             html = html .. "<span style='display: block; margin-top: 10px;'>Other players will know you are " .. ROLE_STRINGS_EXT[ROLE_DETECTIVE] .. " just by <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>looking at you</span>"
-            local special_detective_mode = GetGlobalInt("ttt_detective_hide_special_mode", SPECIAL_DETECTIVE_HIDE_NONE)
+            local special_detective_mode = GetReplicatedValue(function()
+                    return GetConVar("ttt_detectives_hide_special_mode"):GetInt()
+                end,
+                function()
+                    return GetGlobalInt("ttt_detective_hide_special_mode", SPECIAL_DETECTIVE_HIDE_NONE)
+                end)
+
             if special_detective_mode > SPECIAL_DETECTIVE_HIDE_NONE then
                 html = html .. ", but not what specific type of " .. ROLE_STRINGS[ROLE_DETECTIVE]
                 if special_detective_mode == SPECIAL_DETECTIVE_HIDE_FOR_ALL then
@@ -99,7 +117,7 @@ if CLIENT then
             local text
             if client:GetNWBool("SantaCannonDisabled", false) then
                 text = "Christmas Cannon: DISABLED"
-            elseif GetGlobalBool("ttt_santa_random_presents", false) then
+            elseif santa_random_presents:GetBool() then
                 if client:GetNWBool("SantaHasAmmo", false) then
                     text = "Christmas Cannon: READY"
                 else
@@ -143,11 +161,6 @@ end
 if SERVER then
     AddCSLuaFile()
 
-    CreateConVar("ttt_santa_random_presents", 0)
-    CreateConVar("ttt_santa_jesters_are_naughty", 1)
-    CreateConVar("ttt_santa_independents_are_naughty", 0)
-    CreateConVar("ttt_santa_shop_sync", 1) -- This is generated automatically later but we want it on by default so we create it here first
-
     local plymeta = FindMetaTable("Player")
 
     function plymeta:CheckSantaGift(sender)
@@ -178,15 +191,9 @@ if SERVER then
         self.giftsReceived = {}
     end
 
-    hook.Add("TTTSyncGlobals", "Santa_TTTSyncGlobals", function()
-        SetGlobalBool("ttt_santa_random_presents", GetConVar("ttt_santa_random_presents"):GetBool())
-        SetGlobalBool("ttt_santa_jesters_are_naughty", GetConVar("ttt_santa_jesters_are_naughty"):GetBool())
-        SetGlobalBool("ttt_santa_independents_are_naughty", GetConVar("ttt_santa_independents_are_naughty"):GetBool())
-    end)
-
     -- We don't want Santa to receive items unless random presents is turned on
     hook.Add("TTTCanOrderEquipment", "Santa_TTTCanOrderEquipment", function(ply, id, is_item)
-        if ply:IsSanta() and not GetGlobalBool("ttt_santa_random_presents", false) then
+        if ply:IsSanta() and not santa_random_presents:GetBool() then
             if ply:GetNWString("SantaLoadedItem") == "" then
                 -- Technically need to check if santa is actually allowed to buy the item here before loading it but this will only matter if people specifically try to break the role with console commands
                 ply:SetNWString("SantaLoadedItem", tostring(id))
@@ -217,7 +224,7 @@ if SERVER then
         end
 
         -- If random presents are disabled we hijack santa's credits to tie them to their ammo
-        if not GetGlobalBool("ttt_santa_random_presents", false) then
+        if not santa_random_presents:GetBool() then
             timer.Create("santacredits", 1, 0, function()
                 for _, v in pairs(player.GetAll()) do
                     if v:IsActiveSanta() then
@@ -238,14 +245,14 @@ if SERVER then
 
     hook.Add("TTTRewardDetectiveTraitorDeath", "Santa_TTTRewardDetectiveTraitorDeath", function(ply, victim, attacker, amount)
         -- If random presents are disabled santa should not receive credits
-        if not GetGlobalBool("ttt_santa_random_presents", false) and ply:IsActiveSanta() then
+        if not santa_random_presents:GetBool() and ply:IsActiveSanta() then
             return true
         end
     end)
 
     hook.Add("TTTRewardPlayerKilledAmount", "Santa_TTTRewardPlayerKilledAmount", function(victim, attacker, amount)
         -- If random presents are disabled santa should not receive credits
-        if not GetGlobalBool("ttt_santa_random_presents", false) and attacker:IsActiveSanta() then
+        if not santa_random_presents:GetBool() and attacker:IsActiveSanta() then
             return 0
         end
     end)

@@ -57,9 +57,10 @@ local animationLengths = {
 
 SWEP.DeploySpeed = animationLengths[ACT_VM_DRAW]
 
+local communist_convert_credits = CreateConVar("ttt_communist_convert_credits", "1", FCVAR_REPLICATED, "How many credits to award the non-communists when a player is converted", 0, 10)
+local communist_convert_freeze = CreateConVar("ttt_communist_convert_freeze", "1", FCVAR_REPLICATED, "Whether to freeze a player in place while they are being converted", 0, 1)
+
 if SERVER then
-    CreateConVar("ttt_communist_convert_credits", "1", FCVAR_NONE, "How many credits to award the non-communists when a player is converted", 0, 10)
-    CreateConVar("ttt_communist_convert_freeze", "1", FCVAR_NONE, "Whether to freeze a player in place while they are being converted", 0, 1)
     CreateConVar("ttt_communist_convert_unfreeze_delay", "2", FCVAR_NONE, "The number of seconds a player will stay frozen after the conversion process is cancelled", 0, 15)
     CreateConVar("ttt_communist_convert_time", "5", FCVAR_NONE, "The amount of time it takes the Communist Manifesto to convert a player", 1, 30)
 end
@@ -194,7 +195,7 @@ function SWEP:Convert(entity)
 
     entity:PrintMessage(HUD_PRINTCENTER, "Someone is converting you to Communism!")
     self.TargetEntity = entity
-    if GetConVar("ttt_communist_convert_freeze"):GetBool() then
+    if communist_convert_freeze:GetBool() then
         self:DoFreeze()
     end
 
@@ -222,7 +223,7 @@ function SWEP:DoConvert()
     -- Reset the victim's max health
     SetRoleMaxHealth(ply)
 
-    local credits = GetConVar("ttt_communist_convert_credits"):GetInt()
+    local credits = communist_convert_credits:GetInt()
     -- Give credits to all of the non-Communists when a player is converted to Communism
     if credits > 0 then
         for _, p in ipairs(player.GetAll()) do

@@ -202,10 +202,10 @@ if CLIENT then
             local traitorColor = ROLE_COLORS[ROLE_TRAITOR]
             local html = "The " .. ROLE_STRINGS[ROLE_COMMUNIST] .. " is an <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>independent</span> role whose goal is to convert all living players <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>to communism</span> using the <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>Communist Manifesto</span>."
 
-            local freeze = GetGlobalBool("ttt_communist_convert_freeze", true) and "" or " NOT"
+            local freeze = GetConVar("ttt_communist_convert_freeze"):GetBool() and "" or " NOT"
             html = html .. "<span style='display: block; margin-top: 10px;'>Players <span style='color: rgb(" .. traitorColor.r .. ", " .. traitorColor.g .. ", " .. traitorColor.b .. ")'>will" .. freeze .. " be frozen</span> while being converted.</span>"
 
-            local credits = GetGlobalInt("ttt_communist_convert_credits", 1)
+            local credits = GetConVar("ttt_communist_convert_credits"):GetInt()
             if credits > 0 then
                 local plural = ""
                 if credits > 1 then
@@ -223,11 +223,6 @@ if SERVER then
     AddCSLuaFile()
 
     resource.AddSingleFile("sound/anthem.mp3")
-
-    hook.Add("TTTSyncGlobals", "Communist_TTTSyncGlobals", function()
-        SetGlobalBool("ttt_communist_convert_freeze", GetConVar("ttt_communist_convert_freeze"):GetBool())
-        SetGlobalInt("ttt_communist_convert_credits", GetConVar("ttt_communist_convert_credits"):GetInt())
-    end)
 
     hook.Add("Initialize", "Communist_Initialize", function()
         WIN_COMMUNIST = GenerateNewWinID(ROLE_COMMUNIST)
