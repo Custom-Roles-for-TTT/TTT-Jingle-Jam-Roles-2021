@@ -193,7 +193,7 @@ function SWEP:Convert(entity)
     self:SetMessage("CONVERTING")
     self:CancelUnfreeze(entity)
 
-    entity:PrintMessage(HUD_PRINTCENTER, "Someone is converting you to Communism!")
+    entity:QueueMessage(MSG_PRINTCENTER, "Someone is converting you to Communism!")
     self.TargetEntity = entity
     if communist_convert_freeze:GetBool() then
         self:DoFreeze()
@@ -209,7 +209,7 @@ function SWEP:DoConvert()
         ply:Give("weapon_com_manifesto")
     end
     ply:SetRole(ROLE_COMMUNIST)
-    ply:PrintMessage(HUD_PRINTCENTER, "You have have converted to Communism! Use your manifesto to spread it further")
+    ply:QueueMessage(MSG_PRINTCENTER, "You have have converted to Communism! Use your manifesto to spread it further")
 
     net.Start("TTT_Communism_Converted")
     net.WriteString(ply:Nick())

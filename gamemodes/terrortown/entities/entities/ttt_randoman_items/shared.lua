@@ -63,7 +63,7 @@ if SERVER then
                 local item = GetEquipmentItemById(id)
 
                 if ply:IsRandoman() and Randomat:IsEventActive(item.eventid) then
-                    ply:PrintMessage(HUD_PRINTCENTER, "That's already in effect!")
+                    ply:QueueMessage(MSG_PRINTCENTER, "That's already in effect!")
 
                     return false
                 end
