@@ -48,13 +48,6 @@ local santa_independents_are_naughty = CreateConVar("ttt_santa_independents_are_
 CreateConVar("ttt_santa_shop_sync", 1, FCVAR_REPLICATED) -- This is generated automatically later but we want it on by default so we create it here first
 
 if CLIENT then
-    local function GetReplicatedValue(onreplicated, onglobal)
-        if CRVersion("1.9.3") then
-            return onreplicated()
-        end
-        return onglobal()
-    end
-
     hook.Add("TTTTutorialRoleText", "Santa_TTTTutorialRoleText", function(role, titleLabel)
         if role == ROLE_SANTA then
             local roleColor = ROLE_COLORS[ROLE_INNOCENT]
@@ -90,13 +83,8 @@ if CLIENT then
             html = html .. ") player is killed by coal."
 
             html = html .. "<span style='display: block; margin-top: 10px;'>Other players will know you are " .. ROLE_STRINGS_EXT[ROLE_DETECTIVE] .. " just by <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>looking at you</span>"
-            local special_detective_mode = GetReplicatedValue(function()
-                    return GetConVar("ttt_detectives_hide_special_mode"):GetInt()
-                end,
-                function()
-                    return GetGlobalInt("ttt_detective_hide_special_mode", SPECIAL_DETECTIVE_HIDE_NONE)
-                end)
 
+            local special_detective_mode = GetConVar("ttt_detectives_hide_special_mode"):GetInt()
             if special_detective_mode > SPECIAL_DETECTIVE_HIDE_NONE then
                 html = html .. ", but not what specific type of " .. ROLE_STRINGS[ROLE_DETECTIVE]
                 if special_detective_mode == SPECIAL_DETECTIVE_HIDE_FOR_ALL then
