@@ -1,5 +1,5 @@
 # _Custom Roles for TTT_ Roles Pack for Jingle Jam 2021
-A pack of [Custom Roles for TTT](https://github.com/NoxxFlame/TTT-Custom-Roles) roles created based on the generous donations of our community members in support of [Jingle Jam 2021](https://www.jinglejam.co.uk/).
+A pack of [Custom Roles for TTT](https://github.com/Custom-Roles-for-TTT/TTT-Custom-Roles) roles created based on the generous donations of our community members in support of [Jingle Jam 2021](https://www.jinglejam.co.uk/).
 
 # Roles
 
@@ -94,7 +94,7 @@ ttt_taxidermist_min_players          0    // The minimum number of players requi
 ttt_taxidermist_device_time          5    // The number of seconds the taxidermist's device takes to use on a corpse
 ```
 
-## Special Thanks
+# Special Thanks
 - [Benboncan](https://freesound.org/people/Benboncan/sounds/66951/) on FreeSound.org for the Boxer's knockout sound
 - [Fyxen](https://steamcommunity.com/profiles/76561198810121546/) for the model, texture, and animations for the boxing gloves and communist manifesto, for sound modification for the boxing gloves, and for the model and texture modifications for the christmas cannon
 - [Game icons](https://game-icons.net/) for the role icons
