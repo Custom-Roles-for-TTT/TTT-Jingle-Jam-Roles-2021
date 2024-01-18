@@ -183,7 +183,7 @@ if SERVER then
                     end
                 end
 
-                -- If we haven't yet found an event, make sure we include the onces we always want to show
+                -- If we haven't yet found an event, make sure we include the ones we always want to show
                 if not event and forcedItemCount < forcedItemTotal then
                     forcedItemCount = forcedItemCount + 1
                     event = Randomat.Events[forcedEvents[forcedItemCount]]
