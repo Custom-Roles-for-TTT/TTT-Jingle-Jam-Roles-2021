@@ -281,7 +281,8 @@ function SWEP:Think()
         end
 
         -- If there is a target and they have been turned to a communist by someone else, stop trying to drain them
-        if not IsPlayer(self.TargetEntity) or self.TargetEntity:IsCommunist() then
+        -- Also don't try converting someone who doesn't have a role, for whatever reason
+        if not IsPlayer(self.TargetEntity) or self.TargetEntity:IsCommunist() or self.TargetEntity:GetRole() <= ROLE_NONE then
             self:Error("CONVERSION ABORTED")
             return
         end
