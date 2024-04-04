@@ -33,6 +33,10 @@ ROLE.convars = {
     {
         cvar = "ttt_santa_independents_are_naughty",
         type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_santa_set_gift_owner",
+        type = ROLE_CONVAR_TYPE_BOOL
     }
 }
 

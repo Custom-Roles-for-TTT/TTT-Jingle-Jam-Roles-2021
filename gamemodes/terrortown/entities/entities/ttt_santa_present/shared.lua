@@ -17,7 +17,9 @@ end
 if SERVER then
     util.AddNetworkString("TTT_SantaPresentNotify")
 
-    local function CallShopHooks(isequip, id, ply)
+    local santa_set_gift_owner = CreateConVar("ttt_santa_set_gift_owner", "0", FCVAR_NONE, "Whether gifts given by santa should be owned by them for the purposes of roles that react to the original weapon buyer (e.g the beggar)", 0, 1)
+
+    local function CallShopHooks(isequip, id, ply, santa)
         hook.Call("TTTOrderedEquipment", GAMEMODE, ply, id, isequip, true)
         ply:AddBought(id)
 
@@ -40,6 +42,16 @@ if SERVER then
             net.WriteString(id)
         end
         net.Send(ply)
+
+        -- Fudge the equip to trigger "on equip" effect
+        if santa_set_gift_owner:GetBool() then
+            hook.Call("WeaponEquip", GAMEMODE, {
+                CanBuy = true,
+                BoughtBy = santa,
+                IsValid = function() return true end,
+                Kind = WEAPON_ROLE
+            }, ply)
+        end
     end
 
     local function NotifyPlayer(ply, item, has, can_carry)
@@ -68,7 +80,7 @@ if SERVER then
                         return
                     else
                         activator:GiveEquipmentItem(equip_id)
-                        CallShopHooks(equip_id, equip_id, activator)
+                        CallShopHooks(equip_id, equip_id, activator, owner)
                     end
                 else
                     local has = activator:HasWeapon(item_id)
@@ -79,7 +91,7 @@ if SERVER then
                         return
                     else
                         activator:Give(item_id)
-                        CallShopHooks(nil, item_id, activator)
+                        CallShopHooks(nil, item_id, activator, owner)
                     end
                 end
 
