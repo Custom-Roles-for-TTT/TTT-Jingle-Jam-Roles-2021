@@ -91,6 +91,7 @@ ttt_santa_max_health               100 // The maximum amount of health a santa c
 ttt_santa_random_presents          0   // Whether santa should give random presents instead of being able to choose presents from the shop
 ttt_santa_jesters_are_naughty      1   // Whether jesters are considered to be "naughty" players
 ttt_santa_independents_are_naughty 0   // Whether independents are considered to be "naughty" players
+ttt_santa_set_gift_owner           0   // Whether gifts given by santa should be owned by them for the purposes of roles that react to the original weapon buyer (e.g the beggar)
 ttt_santa_credits_starting         1   // The number of credits a santa should start with
 ttt_santa_shop_sync                0   // Whether a santa should have all weapons that vanilla detectives have in their weapon shop
 ttt_santa_shop_random_percent      0   // The percent chance that a weapon in the shop will be not be shown for the santa

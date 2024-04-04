@@ -302,7 +302,7 @@ if SERVER then
             PrintMessage(HUD_PRINTCENTER, "FIGHT!")
 
             net.Start("TTT_BoxerWinPrevented")
-            net.WriteEntity(boxer)
+            net.WritePlayer(boxer)
             net.Broadcast()
         end
         return WIN_NONE
@@ -369,7 +369,7 @@ if CLIENT then
     end
 
     net.Receive("TTT_BoxerWinPrevented", function()
-        local ent = net.ReadEntity()
+        local ent = net.ReadPlayer()
         if not IsPlayer(ent) then return end
 
         ent:EmitSound("fight.wav")

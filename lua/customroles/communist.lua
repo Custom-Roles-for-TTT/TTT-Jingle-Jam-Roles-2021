@@ -4,6 +4,7 @@ local player = player
 local string = string
 local table = table
 
+local PlayerIterator = player.Iterator
 local StringUpper = string.upper
 
 local ROLE = {}
@@ -85,7 +86,7 @@ if CLIENT then
         if wintype == WIN_COMMUNIST then return end
 
         -- Only show this message if there was a Communist in the round
-        for _, p in ipairs(player.GetAll()) do
+        for _, p in PlayerIterator() do
             if p:IsCommunist() then
                 table.insert(secondary_wins, {
                     rol = ROLE_COMMUNIST,
@@ -232,7 +233,7 @@ if SERVER then
     hook.Add("TTTCheckForWin", "Communist_CheckForWin", function()
         local communist_alive = false
         local other_alive = false
-        for _, v in ipairs(player.GetAll()) do
+        for _, v in PlayerIterator() do
             if v:Alive() and v:IsTerror() then
                 if v:IsCommunist() then
                     communist_alive = true
@@ -258,7 +259,7 @@ if SERVER then
     end)
 
     hook.Add("TTTPrepareRound", "Communist_RoleFeatures_PrepareRound", function()
-        for _, v in pairs(player.GetAll()) do
+        for _, v in PlayerIterator() do
             v:SetNWInt("CommunistFreezeCount", 0)
         end
     end)

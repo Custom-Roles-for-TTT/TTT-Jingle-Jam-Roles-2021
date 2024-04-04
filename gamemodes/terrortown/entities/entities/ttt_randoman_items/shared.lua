@@ -1,5 +1,10 @@
 -- Don't run this if the randomat doesn't exist, the role obviously can't work then
 if not Randomat or type(Randomat.IsInnocentTeam) ~= "function" then return end
+
+local player = player
+
+local PlayerIterator = player.Iterator
+
 local initialID = -1
 local finalID = -1
 local itemTotal = 15
@@ -258,7 +263,7 @@ if SERVER then
 
     -- Greys out randomats if an event's condition isn't met anymore, because something changed in the round, for anyone who is a randoman
     timer.Create("CheckValidRandomanEvents", 1, 0, function()
-        for i, ply in ipairs(player.GetAll()) do
+        for i, ply in PlayerIterator() do
             if ply:IsRandoman() then
                 for j, item in ipairs(EquipmentItems[ROLE_RANDOMAN]) do
                     -- Check that it is using one of the IDs used by a randoman item
