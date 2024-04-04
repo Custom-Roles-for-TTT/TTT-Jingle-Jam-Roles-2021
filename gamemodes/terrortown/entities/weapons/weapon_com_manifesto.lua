@@ -8,6 +8,8 @@ local surface = surface
 local timer = timer
 local util = util
 
+local PlayerIterator = player.Iterator
+
 if CLIENT then
     SWEP.PrintName = "Communist Manifesto"
     SWEP.EquipMenuData = {
@@ -226,7 +228,7 @@ function SWEP:DoConvert()
     local credits = communist_convert_credits:GetInt()
     -- Give credits to all of the non-Communists when a player is converted to Communism
     if credits > 0 then
-        for _, p in ipairs(player.GetAll()) do
+        for _, p in PlayerIterator() do
             if not p:IsCommunist() and p:IsShopRole() then
                 p:AddCredits(credits)
             end

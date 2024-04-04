@@ -1,3 +1,7 @@
+local player = player
+
+local PlayerIterator = player.Iterator
+
 local ROLE = {}
 ROLE.nameraw = "randoman"
 ROLE.name = "Randoman"
@@ -85,7 +89,7 @@ if SERVER then
     hook.Add("TTTRandomatCanEventRun", "HardBanRandomanEvents", function(event)
         if not blockedEvents[event.Id] then return end
 
-        for _, ply in ipairs(player.GetAll()) do
+        for _, ply in PlayerIterator() do
             if ply:IsRandoman() then return false, "There is " .. ROLE_STRINGS_EXT[ROLE_RANDOMAN] .. " in the round and this event " .. blockedEvents[event.Id] end
         end
     end)

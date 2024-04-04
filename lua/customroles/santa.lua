@@ -1,3 +1,7 @@
+local player = player
+
+local PlayerIterator = player.Iterator
+
 local ROLE = {}
 
 ROLE.nameraw = "santa"
@@ -196,7 +200,7 @@ if SERVER then
     end)
 
     hook.Add("TTTPrepareRound", "Santa_TTTPrepareRound", function()
-        for _, v in pairs(player.GetAll()) do
+        for _, v in PlayerIterator() do
             v:SetNWString("SantaLoadedItem", "")
             v:SetNWBool("SantaHasAmmo", false)
             v:SetNWBool("SantaCannonDisabled", false)
@@ -205,7 +209,7 @@ if SERVER then
     end)
 
     hook.Add("TTTBeginRound", "Santa_TTTBeginRound", function()
-        for _, v in pairs(player.GetAll()) do
+        for _, v in PlayerIterator() do
             if v:IsActiveSanta() then
                 v:SetNWBool("SantaHasAmmo", true)
             end
@@ -214,7 +218,7 @@ if SERVER then
         -- If random presents are disabled we hijack santa's credits to tie them to their ammo
         if not santa_random_presents:GetBool() then
             timer.Create("santacredits", 1, 0, function()
-                for _, v in pairs(player.GetAll()) do
+                for _, v in PlayerIterator() do
                     if v:IsActiveSanta() then
                         if v:GetCredits() ~= 0 and not v:GetNWBool("SantaHasAmmo", false) then
                             v:SetCredits(0)
@@ -269,7 +273,7 @@ if SERVER then
     hook.Add("TTTRandomatCanEventRun", "Santa_TTTRandomatCanEventRun", function(event)
         if not blockedEvents[event.Id] then return end
 
-        for _, ply in ipairs(player.GetAll()) do
+        for _, ply in PlayerIterator() do
             if ply:IsSanta() then
                 return false, "There is " .. ROLE_STRINGS_EXT[ROLE_SANTA] .. " in the round and this event " .. blockedEvents[event.Id]
             end
