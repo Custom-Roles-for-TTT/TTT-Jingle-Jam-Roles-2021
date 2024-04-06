@@ -14,7 +14,7 @@ ROLE.nameshort = "ran"
 
 if independentCvar:GetBool() then
     ROLE.desc = [[You are {role}!
-    Buy randomats to help you kill everyone else to win!]]
+Buy randomats to help you kill everyone else to win!]]
     ROLE.team = ROLE_TEAM_INDEPENDENT
 
     ROLE.translations = {
@@ -163,7 +163,7 @@ if SERVER then
     hook.Add("Initialize", "RandomanIndependentGenerateWinID", function()
         WIN_RANDOMAN = GenerateNewWinID(ROLE_RANDOMAN)
     end)
-    
+
     hook.Add("TTTCheckForWin", "RandomanIndependentWin", function()
         if not independentCvar:GetBool() then return end
 
@@ -233,7 +233,7 @@ if CLIENT then
             if GetConVar("ttt_randoman_prevent_auto_randomat"):GetBool() and GetConVar("ttt_randomat_auto"):GetBool() then
                 html = html .. "<br><br>If a " .. ROLE_STRINGS[ROLE_RANDOMAN] .. " spawns at the start of the round, <span style='color: rgb(" .. teamColor.r .. ", " .. teamColor.g .. ", " .. teamColor.b .. ")'>no randomat automatically triggers</span>."
             end
-            
+
             if not independentCvar:GetBool() then
                 html = html .. "<span style='display: block; margin-top: 10px;'>Other players will know you are " .. ROLE_STRINGS_EXT[ROLE_DETECTIVE] .. " just by <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>looking at you</span>"
 
