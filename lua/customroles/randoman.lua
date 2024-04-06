@@ -20,7 +20,7 @@ if independentCvar:GetBool() then
     ROLE.translations = {
         ["english"] = {
             ["win_randoman"] = "The {role}'s chaos has taken over!",
-            ["hilite_win_randoman"] = "{role} WINS"
+            ["hilite_win_randoman"] = "THE {role} WINS"
         }
     }
 
@@ -160,56 +160,52 @@ if SERVER then
         end
     end)
 
-    if independentCvar:GetBool() then
-        hook.Add("Initialize", "RandomanIndependentGenerateWinID", function()
-            WIN_RANDOMAN = GenerateNewWinID(ROLE_RANDOMAN)
-        end)
+    hook.Add("Initialize", "RandomanIndependentGenerateWinID", function()
+        WIN_RANDOMAN = GenerateNewWinID(ROLE_RANDOMAN)
+    end)
+    
+    hook.Add("TTTCheckForWin", "RandomanIndependentWin", function()
+        if not independentCvar:GetBool() then return end
 
-        hook.Add("TTTCheckForWin", "RandomanIndependentWin", function()
-            local randomanAlive = false
-            local otherAlive = false
+        local randomanAlive = false
+        local otherAlive = false
 
-            for _, ply in PlayerIterator() do
-                if ply:Alive() and ply:IsTerror() then
-                    if ply:IsRandoman() then
-                        randomanAlive = true
-                    elseif not ply:ShouldActLikeJester() then
-                        otherAlive = true
-                    end
+        for _, ply in PlayerIterator() do
+            if ply:Alive() and ply:IsTerror() then
+                if ply:IsRandoman() then
+                    randomanAlive = true
+                elseif not ply:ShouldActLikeJester() then
+                    otherAlive = true
                 end
             end
+        end
 
-            print(randomanAlive, otherAlive)
-            
-            if randomanAlive and not otherAlive then
-                return WIN_RANDOMAN
-            elseif randomanAlive then
-                return WIN_NONE
-            end
-        end)
+        if randomanAlive and not otherAlive then
+            return WIN_RANDOMAN
+        elseif randomanAlive then
+            return WIN_NONE
+        end
+    end)
 
-        hook.Add("TTTPrintResultMessage", "RandomanIndependentWinMessage", function(type)
-            if type == WIN_RANDOMAN then
-                LANG.Msg("win_randoman", { role = ROLE_STRINGS[ROLE_RANDOMAN] })
-                ServerLog("Result: The " .. ROLE_STRINGS[ROLE_RANDOMAN] .. " wins.\n")
-                return true
-            end
-        end)
-    end
+    hook.Add("TTTPrintResultMessage", "RandomanIndependentWinMessage", function(type)
+        if type == WIN_RANDOMAN then
+            LANG.Msg("win_randoman", { role = ROLE_STRINGS[ROLE_RANDOMAN] })
+            ServerLog("Result: The " .. ROLE_STRINGS[ROLE_RANDOMAN] .. " wins.\n")
+            return true
+        end
+    end)
 end
 
 if CLIENT then
-    if independentCvar:GetBool() then
-        hook.Add("TTTSyncWinIDs", "RandomanSyncWinIDs", function()
-            WIN_RANDOMAN = WINS_BY_ROLE[ROLE_RANDOMAN]
-        end)
+    hook.Add("TTTSyncWinIDs", "RandomanSyncWinIDs", function()
+        WIN_RANDOMAN = WINS_BY_ROLE[ROLE_RANDOMAN]
+    end)
 
-        hook.Add("TTTScoringWinTitle", "RandomanWinTitle", function(wintype, wintitles, title, secondaryWinRole)
-            if wintype == WIN_RANDOMAN then
-                return { txt = "hilite_win_randoman", params = { role = ROLE_STRINGS[ROLE_RANDOMAN]:upper() }, c = ROLE_COLORS[ROLE_RANDOMAN] }
-            end
-        end)
-    end
+    hook.Add("TTTScoringWinTitle", "RandomanWinTitle", function(wintype, wintitles, title, secondaryWinRole)
+        if wintype == WIN_RANDOMAN then
+            return { txt = "hilite_win_randoman", params = { role = ROLE_STRINGS[ROLE_RANDOMAN]:upper() }, c = ROLE_COLORS[ROLE_RANDOMAN] }
+        end
+    end)
 
     hook.Add("TTTTutorialRoleText", "RandomanTutorialRoleText", function(role, titleLabel, roleIcon)
         if role == ROLE_RANDOMAN then
@@ -257,3 +253,9 @@ if CLIENT then
         end
     end)
 end
+
+hook.Add("TTTUpdateRoleState", "RandomanUpdateRoleState", function()
+    local is_independent = independentCvar:GetBool()
+    INDEPENDENT_ROLES[ROLE_RANDOMAN] = is_independent
+    DETECTIVE_ROLES[ROLE_RANDOMAN] = not is_independent
+end)
