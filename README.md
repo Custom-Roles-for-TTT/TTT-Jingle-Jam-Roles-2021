@@ -74,6 +74,7 @@ ttt_randoman_credits_starting           1      // The number of credits a random
 ttt_randoman_shop_sync                  0      // Whether a randoman should have all weapons that vanilla detectives have in their weapon shop
 ttt_randoman_shop_random_percent        0      // The percent chance that a weapon in the shop will be not be shown for the randoman
 ttt_randoman_shop_random_enabled        0      // Whether role shop randomization is enabled for the randoman
+ttt_randoman_is_independent             0      // Whether the randoman is an independent role (Requires map change)
 ```
 
 ## Santa
