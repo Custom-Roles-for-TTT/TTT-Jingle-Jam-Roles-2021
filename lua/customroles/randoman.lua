@@ -3,7 +3,9 @@ local player = player
 local PlayerIterator = player.Iterator
 
 local preventAutoRandomatCvar = CreateConVar("ttt_randoman_prevent_auto_randomat", 1, FCVAR_REPLICATED, "Prevent auto-randomat triggering if there is a randoman at the start of the round", 0, 1)
-local independentCvar = CreateConVar("ttt_randoman_is_independent", "0", FCVAR_REPLICATED, "Whether the randoman is an independent role (Requires map change)", 0, 1)
+local independentCvar = CreateConVar("ttt_randoman_is_independent", "0", FCVAR_REPLICATED, "Whether the randoman is an independent role", 0, 1)
+local seeJestersCvar = CreateConVar("ttt_randoman_can_see_jesters", "1", FCVAR_REPLICATED, "Whether jesters are revealed (via head icons, color/icon on the scoreboard, etc.) to the randoman (if ttt_randoman_is_independent is enabled)", 0, 1)
+local updateScoreboardCvar = CreateConVar("ttt_randoman_update_scoreboard", "1", FCVAR_REPLICATED, "Whether the randoman shows dead players as missing in action (if ttt_randoman_is_independent is enabled)", 0, 1)
 
 local ROLE = {}
 ROLE.nameraw = "randoman"
@@ -11,25 +13,18 @@ ROLE.name = "Randoman"
 ROLE.nameplural = "Randomen"
 ROLE.nameext = "a Randoman"
 ROLE.nameshort = "ran"
+ROLE.team = ROLE_TEAM_DETECTIVE
 
-if independentCvar:GetBool() then
-    ROLE.desc = [[You are {role}!
+ROLE.translations = {
+    ["english"] = {
+        ["win_randoman"] = "The {role}'s chaos has taken over!",
+        ["hilite_win_randoman"] = "THE {role} WINS",
+        ["info_popup_randoman"] = [[You are {role}!
+You're {adetective}, but you can buy randomats instead of {detective} items!]],
+        ["info_popup_randoman_independent"] = [[You are {role}!
 Buy randomats to help you kill everyone else to win!]]
-    ROLE.team = ROLE_TEAM_INDEPENDENT
-
-    ROLE.translations = {
-        ["english"] = {
-            ["win_randoman"] = "The {role}'s chaos has taken over!",
-            ["hilite_win_randoman"] = "THE {role} WINS"
-        }
     }
-
-    ROLE.canseejesters = true
-else
-    ROLE.desc = [[You are {role}!
-    You're {adetective}, but you can buy randomats instead of {detective} items!]]
-    ROLE.team = ROLE_TEAM_DETECTIVE
-end
+}
 
 ROLE.shop = {"weapon_ttt_randomat"}
 
@@ -73,6 +68,14 @@ ROLE.convars = {
     },
     {
         cvar = "ttt_randoman_is_independent",
+        type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_randoman_can_see_jesters",
+        type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_randoman_update_scoreboard",
         type = ROLE_CONVAR_TYPE_BOOL
     }
 }
@@ -160,6 +163,7 @@ if SERVER then
         end
     end)
 
+    -- Stuff for the independent convar
     hook.Add("Initialize", "RandomanIndependentGenerateWinID", function()
         WIN_RANDOMAN = GenerateNewWinID(ROLE_RANDOMAN)
     end)
@@ -205,6 +209,16 @@ if CLIENT then
         if wintype == WIN_RANDOMAN then
             return { txt = "hilite_win_randoman", params = { role = ROLE_STRINGS[ROLE_RANDOMAN]:upper() }, c = ROLE_COLORS[ROLE_RANDOMAN] }
         end
+    end)
+
+    hook.Add("TTTRolePopupRoleStringOverride", "RandomanIndependentPopupText", function(client, roleString)
+        if not IsPlayer(client) or client:IsRandoman() then return end
+
+        if independentCvar:GetBool() then
+            return roleString .. "_independent"
+        end
+
+        return roleString
     end)
 
     hook.Add("TTTTutorialRoleText", "RandomanTutorialRoleText", function(role, titleLabel, roleIcon)
@@ -258,4 +272,6 @@ hook.Add("TTTUpdateRoleState", "RandomanUpdateRoleState", function()
     local is_independent = independentCvar:GetBool()
     INDEPENDENT_ROLES[ROLE_RANDOMAN] = is_independent
     DETECTIVE_ROLES[ROLE_RANDOMAN] = not is_independent
+    ROLE_CAN_SEE_JESTERS[ROLE_RANDOMAN] = seeJestersCvar:GetBool()
+    ROLE_CAN_SEE_MIA[ROLE_RANDOMAN] = updateScoreboardCvar:GetBool()
 end)
