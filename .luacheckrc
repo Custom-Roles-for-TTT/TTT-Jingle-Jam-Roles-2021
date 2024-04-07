@@ -1028,9 +1028,7 @@ globals = {
     "ROLE_TAXIDERMIST",
     "WIN_BOXER",
     "WIN_COMMUNIST",
-    "WIN_RANDOMAN",
-    "ROLE_CAN_SEE_JESTERS",
-    "ROLE_CAN_SEE_MIA"
+    "WIN_RANDOMAN"
 }
 std = {
     globals = {

@@ -14,13 +14,13 @@ ROLE.nameplural = "Randomen"
 ROLE.nameext = "a Randoman"
 ROLE.nameshort = "ran"
 ROLE.team = ROLE_TEAM_DETECTIVE
+ROLE.desc = [[You are {role}!
+You're {adetective}, but you can buy randomats instead of {detective} items!]]
 
 ROLE.translations = {
     ["english"] = {
         ["win_randoman"] = "The {role}'s chaos has taken over!",
         ["hilite_win_randoman"] = "THE {role} WINS",
-        ["info_popup_randoman"] = [[You are {role}!
-You're {adetective}, but you can buy randomats instead of {detective} items!]],
         ["info_popup_randoman_independent"] = [[You are {role}!
 Buy randomats to help you kill everyone else to win!]]
     }
@@ -212,7 +212,7 @@ if CLIENT then
     end)
 
     hook.Add("TTTRolePopupRoleStringOverride", "RandomanIndependentPopupText", function(client, roleString)
-        if not IsPlayer(client) or client:IsRandoman() then return end
+        if not IsPlayer(client) or not client:IsRandoman() then return end
 
         if independentCvar:GetBool() then
             return roleString .. "_independent"
@@ -272,6 +272,4 @@ hook.Add("TTTUpdateRoleState", "RandomanUpdateRoleState", function()
     local is_independent = independentCvar:GetBool()
     INDEPENDENT_ROLES[ROLE_RANDOMAN] = is_independent
     DETECTIVE_ROLES[ROLE_RANDOMAN] = not is_independent
-    ROLE_CAN_SEE_JESTERS[ROLE_RANDOMAN] = seeJestersCvar:GetBool()
-    ROLE_CAN_SEE_MIA[ROLE_RANDOMAN] = updateScoreboardCvar:GetBool()
 end)
