@@ -4,8 +4,8 @@ local PlayerIterator = player.Iterator
 
 local preventAutoRandomatCvar = CreateConVar("ttt_randoman_prevent_auto_randomat", 1, FCVAR_REPLICATED, "Prevent auto-randomat triggering if there is a randoman at the start of the round", 0, 1)
 local independentCvar = CreateConVar("ttt_randoman_is_independent", "0", FCVAR_REPLICATED, "Whether the randoman is an independent role", 0, 1)
-local seeJestersCvar = CreateConVar("ttt_randoman_can_see_jesters", "1", FCVAR_REPLICATED, "Whether jesters are revealed (via head icons, color/icon on the scoreboard, etc.) to the randoman (if ttt_randoman_is_independent is enabled)", 0, 1)
-local updateScoreboardCvar = CreateConVar("ttt_randoman_update_scoreboard", "1", FCVAR_REPLICATED, "Whether the randoman shows dead players as missing in action (if ttt_randoman_is_independent is enabled)", 0, 1)
+CreateConVar("ttt_randoman_can_see_jesters", "1", FCVAR_REPLICATED, "Whether jesters are revealed (via head icons, color/icon on the scoreboard, etc.) to the randoman (if ttt_randoman_is_independent is enabled)", 0, 1)
+CreateConVar("ttt_randoman_update_scoreboard", "1", FCVAR_REPLICATED, "Whether the randoman shows dead players as missing in action (if ttt_randoman_is_independent is enabled)", 0, 1)
 
 local ROLE = {}
 ROLE.nameraw = "randoman"
