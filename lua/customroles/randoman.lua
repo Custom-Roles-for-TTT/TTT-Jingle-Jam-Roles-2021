@@ -2,23 +2,35 @@ local player = player
 
 local PlayerIterator = player.Iterator
 
+local preventAutoRandomatCvar = CreateConVar("ttt_randoman_prevent_auto_randomat", 1, FCVAR_REPLICATED, "Prevent auto-randomat triggering if there is a randoman at the start of the round", 0, 1)
+local independentCvar = CreateConVar("ttt_randoman_is_independent", "0", FCVAR_REPLICATED, "Whether the randoman is an independent role", 0, 1)
+CreateConVar("ttt_randoman_can_see_jesters", "1", FCVAR_REPLICATED, "Whether jesters are revealed (via head icons, color/icon on the scoreboard, etc.) to the randoman (if ttt_randoman_is_independent is enabled)", 0, 1)
+CreateConVar("ttt_randoman_update_scoreboard", "1", FCVAR_REPLICATED, "Whether the randoman shows dead players as missing in action (if ttt_randoman_is_independent is enabled)", 0, 1)
+
 local ROLE = {}
 ROLE.nameraw = "randoman"
 ROLE.name = "Randoman"
 ROLE.nameplural = "Randomen"
 ROLE.nameext = "a Randoman"
 ROLE.nameshort = "ran"
+ROLE.team = ROLE_TEAM_DETECTIVE
 ROLE.desc = [[You are {role}!
 You're {adetective}, but you can buy randomats instead of {detective} items!]]
-ROLE.team = ROLE_TEAM_DETECTIVE
+
+ROLE.translations = {
+    ["english"] = {
+        ["win_randoman"] = "The {role}'s chaos has taken over!",
+        ["hilite_win_randoman"] = "THE {role} WINS",
+        ["info_popup_randoman_independent"] = [[You are {role}!
+Buy randomats to help you kill everyone else to win!]]
+    }
+}
 
 ROLE.shop = {"weapon_ttt_randomat"}
 
 ROLE.loadout = {}
 ROLE.startingcredits = 1
 ROLE.selectionpredicate = function() return Randomat and type(Randomat.IsInnocentTeam) == "function" end
-
-local preventAutoRandomatCvar = CreateConVar("ttt_randoman_prevent_auto_randomat", 1, FCVAR_REPLICATED, "Prevent auto-randomat triggering if there is a randoman at the start of the round", 0, 1)
 
 ROLE.convars = {
     {
@@ -53,6 +65,18 @@ ROLE.convars = {
         cvar = "ttt_randoman_choose_event_on_drop_count",
         type = ROLE_CONVAR_TYPE_NUM,
         decimal = 0
+    },
+    {
+        cvar = "ttt_randoman_is_independent",
+        type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_randoman_can_see_jesters",
+        type = ROLE_CONVAR_TYPE_BOOL
+    },
+    {
+        cvar = "ttt_randoman_update_scoreboard",
+        type = ROLE_CONVAR_TYPE_BOOL
     }
 }
 
@@ -138,33 +162,115 @@ if SERVER then
             boughtAsRandoman[ply] = true
         end
     end)
+
+    -- Stuff for the independent convar
+    hook.Add("Initialize", "RandomanIndependentGenerateWinID", function()
+        WIN_RANDOMAN = GenerateNewWinID(ROLE_RANDOMAN)
+    end)
+
+    hook.Add("TTTCheckForWin", "RandomanIndependentWin", function()
+        if not independentCvar:GetBool() then return end
+
+        local randomanAlive = false
+        local otherAlive = false
+
+        for _, ply in PlayerIterator() do
+            if ply:Alive() and ply:IsTerror() then
+                if ply:IsRandoman() then
+                    randomanAlive = true
+                elseif not ply:ShouldActLikeJester() then
+                    otherAlive = true
+                end
+            end
+        end
+
+        if randomanAlive and not otherAlive then
+            return WIN_RANDOMAN
+        elseif randomanAlive then
+            return WIN_NONE
+        end
+    end)
+
+    hook.Add("TTTPrintResultMessage", "RandomanIndependentWinMessage", function(type)
+        if type == WIN_RANDOMAN then
+            LANG.Msg("win_randoman", { role = ROLE_STRINGS[ROLE_RANDOMAN] })
+            ServerLog("Result: The " .. ROLE_STRINGS[ROLE_RANDOMAN] .. " wins.\n")
+            return true
+        end
+    end)
 end
 
 if CLIENT then
+    hook.Add("TTTSyncWinIDs", "RandomanSyncWinIDs", function()
+        WIN_RANDOMAN = WINS_BY_ROLE[ROLE_RANDOMAN]
+    end)
+
+    hook.Add("TTTScoringWinTitle", "RandomanWinTitle", function(wintype, wintitles, title, secondaryWinRole)
+        if wintype == WIN_RANDOMAN then
+            return { txt = "hilite_win_randoman", params = { role = ROLE_STRINGS[ROLE_RANDOMAN]:upper() }, c = ROLE_COLORS[ROLE_RANDOMAN] }
+        end
+    end)
+
+    hook.Add("TTTRolePopupRoleStringOverride", "RandomanIndependentPopupText", function(client, roleString)
+        if not IsPlayer(client) or not client:IsRandoman() then return end
+
+        if independentCvar:GetBool() then
+            return roleString .. "_independent"
+        end
+
+        return roleString
+    end)
+
     hook.Add("TTTTutorialRoleText", "RandomanTutorialRoleText", function(role, titleLabel, roleIcon)
         if role == ROLE_RANDOMAN then
-            local roleColor = ROLE_COLORS[ROLE_INNOCENT]
-            local teamColor = GetRoleTeamColor(ROLE_TEAM_INNOCENT)
-            local html = "The " .. ROLE_STRINGS[ROLE_RANDOMAN] .. " is a " .. ROLE_STRINGS[ROLE_DETECTIVE] .. " and a member of the <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>innocent team</span> who is able to buy randomat events, rather than <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>" .. ROLE_STRINGS[ROLE_DETECTIVE] .. "</span> items. <br><br>The available randomat events <span style='color: rgb(" .. teamColor.r .. ", " .. teamColor.g .. ", " .. teamColor.b .. ")'>change each round</span>, and are shared between everyone who is a " .. ROLE_STRINGS[ROLE_RANDOMAN] .. ".<br><br>Some randomat events <span style='color: rgb(" .. teamColor.r .. ", " .. teamColor.g .. ", " .. teamColor.b .. ")'>cannot be bought</span>, such as ones that are supposed to start secretly."
+            local roleColor
+            local teamColor
+
+            if independentCvar:GetBool() then
+                roleColor = ROLE_COLORS[ROLE_RANDOMAN]
+                teamColor = GetRoleTeamColor(ROLE_TEAM_INDEPENDENT)
+            else
+                roleColor = ROLE_COLORS[ROLE_DETECTIVE]
+                teamColor = GetRoleTeamColor(ROLE_TEAM_INNOCENT)
+            end
+
+            local html
+
+            if independentCvar:GetBool() then
+                html = "The " .. ROLE_STRINGS[ROLE_RANDOMAN] .. " is an <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>independent role</span> who is able to buy randomat events, rather than items."
+            else
+                html = "The " .. ROLE_STRINGS[ROLE_RANDOMAN] .. " is a " .. ROLE_STRINGS[ROLE_DETECTIVE] .. " and a member of the <span style='color: rgb(" .. teamColor.r .. ", " .. teamColor.g .. ", " .. teamColor.b .. ")'>innocent team</span> who is able to buy randomat events, rather than <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>" .. ROLE_STRINGS[ROLE_DETECTIVE] .. "</span> items."
+            end
+
+            html = html .. "<br><br>The available randomat events <span style='color: rgb(" .. teamColor.r .. ", " .. teamColor.g .. ", " .. teamColor.b .. ")'>change each round</span>, and are shared between everyone who is a " .. ROLE_STRINGS[ROLE_RANDOMAN] .. ".<br><br>Some randomat events <span style='color: rgb(" .. teamColor.r .. ", " .. teamColor.g .. ", " .. teamColor.b .. ")'>cannot be bought</span>, such as ones that are supposed to start secretly."
 
             if GetConVar("ttt_randoman_prevent_auto_randomat"):GetBool() and GetConVar("ttt_randomat_auto"):GetBool() then
                 html = html .. "<br><br>If a " .. ROLE_STRINGS[ROLE_RANDOMAN] .. " spawns at the start of the round, <span style='color: rgb(" .. teamColor.r .. ", " .. teamColor.g .. ", " .. teamColor.b .. ")'>no randomat automatically triggers</span>."
             end
 
-            html = html .. "<span style='display: block; margin-top: 10px;'>Other players will know you are " .. ROLE_STRINGS_EXT[ROLE_DETECTIVE] .. " just by <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>looking at you</span>"
+            if not independentCvar:GetBool() then
+                html = html .. "<span style='display: block; margin-top: 10px;'>Other players will know you are " .. ROLE_STRINGS_EXT[ROLE_DETECTIVE] .. " just by <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>looking at you</span>"
 
-            local special_detective_mode = GetConVar("ttt_detectives_hide_special_mode"):GetInt()
-            if special_detective_mode > SPECIAL_DETECTIVE_HIDE_NONE then
-                html = html .. ", but not what specific type of " .. ROLE_STRINGS[ROLE_DETECTIVE]
+                local special_detective_mode = GetConVar("ttt_detectives_hide_special_mode"):GetInt()
+                if special_detective_mode > SPECIAL_DETECTIVE_HIDE_NONE then
+                    html = html .. ", but not what specific type of " .. ROLE_STRINGS[ROLE_DETECTIVE]
 
-                if special_detective_mode == SPECIAL_DETECTIVE_HIDE_FOR_ALL then
-                    html = html .. ". <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>Not even you know what type of " .. ROLE_STRINGS[ROLE_DETECTIVE] .. " you are</span>"
+                    if special_detective_mode == SPECIAL_DETECTIVE_HIDE_FOR_ALL then
+                        html = html .. ". <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>Not even you know what type of " .. ROLE_STRINGS[ROLE_DETECTIVE] .. " you are</span>"
+                    end
                 end
-            end
 
-            html = html .. ".</span>"
+                html = html .. ".</span>"
+            end
 
             return html
         end
     end)
 end
+
+hook.Add("TTTUpdateRoleState", "RandomanUpdateRoleState", function()
+    local is_independent = independentCvar:GetBool()
+    INDEPENDENT_ROLES[ROLE_RANDOMAN] = is_independent
+    DETECTIVE_ROLES[ROLE_RANDOMAN] = not is_independent
+    INNOCENT_ROLES[ROLE_RANDOMAN] = not is_independent
+end)
