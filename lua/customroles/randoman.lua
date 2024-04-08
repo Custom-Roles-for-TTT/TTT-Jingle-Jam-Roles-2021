@@ -272,4 +272,5 @@ hook.Add("TTTUpdateRoleState", "RandomanUpdateRoleState", function()
     local is_independent = independentCvar:GetBool()
     INDEPENDENT_ROLES[ROLE_RANDOMAN] = is_independent
     DETECTIVE_ROLES[ROLE_RANDOMAN] = not is_independent
+    INNOCENT_ROLES[ROLE_RANDOMAN] = not is_independent
 end)
