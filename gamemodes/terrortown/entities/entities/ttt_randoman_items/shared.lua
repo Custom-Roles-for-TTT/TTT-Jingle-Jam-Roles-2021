@@ -52,7 +52,15 @@ end
 
 if SERVER then
     AddCSLuaFile()
+
     util.AddNetworkString("UpdateRandomanItems")
+
+    -- Lame is pointless to have in the shop as it itself does nothing
+    local randoman_banned_randomats = CreateConVar("ttt_randoman_banned_randomats", "lame", FCVAR_NONE, "Events not allowed in the randoman's shop, separate ids with commas. You can find an ID by turning a randomat on/off in the randomat ULX menu and copying the word after 'ttt_randomat_', which appears in chat.")
+    local randoman_guaranteed_categories = CreateConVar("ttt_randoman_guaranteed_categories", "biased_innocent,fun,moderateimpact", FCVAR_NONE, "At least one randomat from each of these categories will always be in the randoman's shop. You can find a randomat's category by looking at an event in the randomat ULX menu.")
+    local randoman_guaranteed_randomats = CreateConVar("ttt_randoman_guaranteed_randomats", "", FCVAR_NONE, "Events that will always appear in the randoma's shop, separate ids with commas.")
+    local randoman_guarantee_pockets_event = CreateConVar("ttt_randoman_guarantee_pockets_event", 1, FCVAR_NONE, "Whether the \"What did I find in my pocket?\" event should always be available in the randoman's shop while the beggar role is enabled", 0, 1)
+
     local eventsByCategory = {}
 
     for _, category in ipairs(Randomat:GetAllEventCategories()) do
@@ -101,9 +109,9 @@ if SERVER then
     -- Update the banned randomats list
     -- This hook is called repeatedly, to allow for changing the convars round-to-round
     hook.Add("TTTUpdateRoleState", "UpdateBannedRandomanEvents", function()
-        local bannedEventsString = GetConVar("ttt_randoman_banned_randomats"):GetString()
-        local guaranteedEventCategoriesString = GetConVar("ttt_randoman_guaranteed_categories"):GetString()
-        local forcedEventsString = GetConVar("ttt_randoman_guaranteed_randomats"):GetString()
+        local bannedEventsString = randoman_banned_randomats:GetString()
+        local guaranteedEventCategoriesString = randoman_guaranteed_categories:GetString()
+        local forcedEventsString = randoman_guaranteed_randomats:GetString()
 
         if #bannedEventsString > 0 then
             bannedEvents = string.Explode(",", bannedEventsString)
@@ -124,7 +132,7 @@ if SERVER then
         end
 
         -- Add the 'What did I find in my pocket?' event to the randoman's shop if the beggar and convar is enabled
-        if not table.HasValue(forcedEvents, "pocket") and GetConVar("ttt_beggar_enabled"):GetBool() and GetConVar("ttt_randoman_guarantee_pockets_event"):GetBool() then
+        if not table.HasValue(forcedEvents, "pocket") and GetConVar("ttt_beggar_enabled"):GetBool() and randoman_guarantee_pockets_event:GetBool() then
             table.insert(forcedEvents, "pocket")
         end
     end)
