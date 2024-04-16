@@ -83,14 +83,9 @@ ROLE.convars = {
 RegisterRole(ROLE)
 
 if SERVER then
-    -- Lame is pointless to have in the shop as it itself does nothing
-    CreateConVar("ttt_randoman_banned_randomats", "lame", FCVAR_NONE, "Events not allowed in the randoman's shop, separate ids with commas. You can find an ID by turning a randomat on/off in the randomat ULX menu and copying the word after 'ttt_randomat_', which appears in chat.")
-    CreateConVar("ttt_randoman_guaranteed_categories", "biased_innocent,fun,moderateimpact", FCVAR_NONE, "At least one randomat from each of these categories will always be in the randoman's shop. You can find a randomat's category by looking at an event in the randomat ULX menu.")
-    CreateConVar("ttt_randoman_guaranteed_randomats", "", FCVAR_NONE, "Events that will always appear in the randoma's shop, separate ids with commas.")
     local eventOnUnboughtDeathCvar = CreateConVar("ttt_randoman_event_on_unbought_death", 0, FCVAR_NONE, "Whether a randomat should trigger if a randoman dies and never bought anything that round", 0, 1)
     local chooseEventOnDropCvar = CreateConVar("ttt_randoman_choose_event_on_drop", 1, FCVAR_NONE, "Whether the held randomat item should always trigger \"Choose an event!\" after being bought by a randoman and dropped on the ground", 0, 1)
     local chooseEventOnDropCountCvar = CreateConVar("ttt_randoman_choose_event_on_drop_count", 5, FCVAR_NONE, "The number of events a player should be able to choose from when using a dropped randomat", 1, 10)
-    CreateConVar("ttt_randoman_guarantee_pockets_event", 1, FCVAR_NONE, "Whether the \"What did I find in my pocket?\" event should always be available in the randoman's shop while the beggar role is enabled", 0, 1)
 
     local categories, _ = file.Find("gamemodes/terrortown/content/materials/vgui/ttt/roles/ran/items/*.png", "THIRDPARTY")
 
@@ -191,8 +186,8 @@ if SERVER then
         end
     end)
 
-    hook.Add("TTTPrintResultMessage", "RandomanIndependentWinMessage", function(type)
-        if type == WIN_RANDOMAN then
+    hook.Add("TTTPrintResultMessage", "RandomanIndependentWinMessage", function(win_type)
+        if win_type == WIN_RANDOMAN then
             LANG.Msg("win_randoman", { role = ROLE_STRINGS[ROLE_RANDOMAN] })
             ServerLog("Result: The " .. ROLE_STRINGS[ROLE_RANDOMAN] .. " wins.\n")
             return true
