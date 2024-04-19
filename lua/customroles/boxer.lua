@@ -12,6 +12,7 @@ knock them out.
 
 Knock out all of the living players at
 the same time to win!]]
+ROLE.shortdesc = "Uses their Boxing Gloves to knock out players and make them drop their weapons. Wins by knocking out all living players at the same time."
 
 ROLE.team = ROLE_TEAM_JESTER
 

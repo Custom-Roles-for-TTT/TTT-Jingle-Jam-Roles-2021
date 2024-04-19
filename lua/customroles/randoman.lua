@@ -16,6 +16,7 @@ ROLE.nameshort = "ran"
 ROLE.team = ROLE_TEAM_DETECTIVE
 ROLE.desc = [[You are {role}!
 You're {adetective}, but you can buy randomats instead of {detective} items!]]
+ROLE.shortdesc = "Can buy Randomat events from their shop to help or to hurt."
 
 ROLE.translations = {
     ["english"] = {

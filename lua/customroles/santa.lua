@@ -14,6 +14,7 @@ ROLE.desc = [[You are {role}! As {adetective}, HQ has given you special resource
 You can use your christmas cannon to give gifts to nice children and coal to naughty children.
 
 Press {menukey} to receive your equipment!]]
+ROLE.shortdesc = "Has a Christmas Cannon that can fire presents from their buy menu, or coal which kills anyone it touches."
 
 ROLE.team = ROLE_TEAM_DETECTIVE
 ROLE.shop = {}
