@@ -18,6 +18,7 @@ ROLE.nameshort = "com"
 ROLE.desc = [[You are {role}! Your goal is to
 convert all players to communism
 by using your Communist Manifesto]]
+ROLE.shortdesc = "Spreads communism via their Communist Manifesto. Wins by converting all living players to communism."
 
 ROLE.team = ROLE_TEAM_INDEPENDENT
 ROLE.loadout = {"weapon_com_manifesto"}

@@ -11,6 +11,7 @@ ROLE.desc = [[You are {role}! {comrades}
 You can use your taxidermy kit on a corpse to make them impossible to identify.
 
 Press {menukey} to receive your special equipment!]]
+ROLE.shortdesc = "Has a Taxidermy Kit which can be sed to make player corpses impossible to identify."
 
 ROLE.team = ROLE_TEAM_TRAITOR
 ROLE.loadout = {"weapon_tax_kit"}
