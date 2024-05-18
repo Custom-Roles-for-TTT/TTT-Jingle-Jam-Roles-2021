@@ -70,10 +70,6 @@ if SERVER then
 
     util.AddNetworkString("TTT_BoxerWinPrevented")
 
-    resource.AddSingleFile("sound/fight.wav")
-    resource.AddSingleFile("sound/knockout.mp3")
-    resource.AddSingleFile("sound/scream.mp3")
-
     local knockout = Sound("knockout.mp3")
     local plymeta = FindMetaTable("Player")
 
