@@ -88,12 +88,6 @@ if SERVER then
     local chooseEventOnDropCvar = CreateConVar("ttt_randoman_choose_event_on_drop", 1, FCVAR_NONE, "Whether the held randomat item should always trigger \"Choose an event!\" after being bought by a randoman and dropped on the ground", 0, 1)
     local chooseEventOnDropCountCvar = CreateConVar("ttt_randoman_choose_event_on_drop_count", 5, FCVAR_NONE, "The number of events a player should be able to choose from when using a dropped randomat", 1, 10)
 
-    local categories, _ = file.Find("gamemodes/terrortown/content/materials/vgui/ttt/roles/ran/items/*.png", "THIRDPARTY")
-
-    for _, cat in ipairs(categories) do
-        resource.AddSingleFile("materials/vgui/ttt/roles/ran/items/" .. cat)
-    end
-
     -- Prevents auto-randomat triggering if there is a Randoman alive
     hook.Add("TTTRandomatShouldAuto", "StopAutoRandomatWithRandoman", function()
         if preventAutoRandomatCvar:GetBool() and player.IsRoleLiving(ROLE_RANDOMAN) then return false end

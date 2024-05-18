@@ -224,8 +224,6 @@ end
 if SERVER then
     AddCSLuaFile()
 
-    resource.AddSingleFile("sound/anthem.mp3")
-
     hook.Add("Initialize", "Communist_Initialize", function()
         WIN_COMMUNIST = GenerateNewWinID(ROLE_COMMUNIST)
         EVENT_COMMUNISTCONVERTED = GenerateNewEventID(ROLE_COMMUNIST)
