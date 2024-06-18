@@ -50,7 +50,7 @@ ttt_communist_update_scoreboard      0   // Whether the communist shows dead pla
 ```
 
 ## Randoman
-_Suggested By_: The Stig\
+_Contributed By_: The Stig\
 The Randoman is a detective who is able to buy randomat events, rather than detective items.\
 _Requires [TTT Randomat 2.0 for Custom Roles for TTT](https://steamcommunity.com/sharedfiles/filedetails/?id=2055805086) to be installed._
 \
