@@ -18,8 +18,8 @@ end
 
 SWEP.Base = "weapon_cr_defibbase"
 SWEP.Category = WEAPON_CATEGORY_ROLE
-SWEP.InLoadoutFor = {ROLE_HYPNOTIST}
-SWEP.InLoadoutForDefault = {ROLE_HYPNOTIST}
+SWEP.InLoadoutFor = {ROLE_TAXIDERMIST}
+SWEP.InLoadoutForDefault = {ROLE_TAXIDERMIST}
 SWEP.Kind = WEAPON_ROLE
 
 SWEP.BlockShopRandomization = true
