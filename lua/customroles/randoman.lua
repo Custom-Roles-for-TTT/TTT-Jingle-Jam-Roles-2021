@@ -168,7 +168,7 @@ if SERVER then
             if ply:Alive() and ply:IsTerror() then
                 if ply:IsRandoman() then
                     randomanAlive = true
-                elseif not ply:ShouldActLikeJester() then
+                elseif not ply:ShouldActLikeJester() and not ROLE_HAS_PASSIVE_WIN[ply:GetRole()] then
                     otherAlive = true
                 end
             end
