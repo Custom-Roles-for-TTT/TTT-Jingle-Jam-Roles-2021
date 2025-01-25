@@ -67,7 +67,8 @@ if SERVER then
             if not IsValid(activator) or not activator:Alive() or activator:IsSpec() then return end
             self.nextUse = CurTime() + 0.5
 
-            local owner = self:GetOwner()
+            -- Get the previous owner in case this was picked up by a magneto stick
+            local owner = IsValid(self.PrevOwner) and self.PrevOwner or self:GetOwner()
             if activator:CheckSantaGift(owner) then
                 local item_id = self.item_id
 

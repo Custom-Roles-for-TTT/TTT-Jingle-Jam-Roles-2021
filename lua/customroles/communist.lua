@@ -146,7 +146,7 @@ if CLIENT then
 
     -- Show the correct role icon for communists
     hook.Add("TTTTargetIDPlayerRoleIcon", "Communist_TTTTargetIDPlayerRoleIcon", function(ply, cli, role, noz, colorRole, hideBeggar, showJester, hideBodysnatcher)
-        if cli:IsActiveCommunist() and ply:IsActiveCommunist() then
+        if cli:IsCommunist() and ply:IsCommunist() then
             return ROLE_COMMUNIST, true
         end
     end)
@@ -155,7 +155,7 @@ if CLIENT then
     hook.Add("TTTTargetIDPlayerRing", "Communist_TTTTargetIDPlayerRing", function(ent, cli, ringVisible)
         if not IsPlayer(ent) then return end
 
-        if cli:IsActiveCommunist() and ent:IsActiveCommunist() then
+        if cli:IsCommunist() and ent:IsCommunist() then
             return true, ROLE_COLORS_RADAR[ROLE_COMMUNIST]
         end
     end)
@@ -164,7 +164,7 @@ if CLIENT then
     hook.Add("TTTTargetIDPlayerText", "Communist_TTTTargetIDPlayerText", function(ent, cli, text, col)
         if not IsPlayer(ent) then return end
 
-        if cli:IsActiveCommunist() and ent:IsActiveCommunist() then
+        if cli:IsCommunist() and ent:IsCommunist() then
             return StringUpper(ROLE_STRINGS[ROLE_COMMUNIST]), ROLE_COLORS_RADAR[ROLE_COMMUNIST]
         end
     end)
@@ -173,7 +173,7 @@ if CLIENT then
         if not IsPlayer(target) then return end
 
         -- Override all three pieces
-        if ply:IsActiveCommunist() and target:IsActiveCommunist() then
+        if ply:IsCommunist() and target:IsCommunist() then
             ------ icon, ring, text
             return true, true, true
         end
@@ -184,14 +184,14 @@ if CLIENT then
     ----------------
 
     hook.Add("TTTScoreboardPlayerRole", "Communist_TTTScoreboardPlayerRole", function(ply, cli, color, roleFileName)
-        if cli:IsActiveCommunist() and ply:IsActiveCommunist() then
+        if cli:IsCommunist() and ply:IsCommunist() then
             return ROLE_COLORS_SCOREBOARD[ROLE_COMMUNIST], ROLE_STRINGS_SHORT[ROLE_COMMUNIST]
         end
     end)
 
     ROLE_IS_SCOREBOARD_INFO_OVERRIDDEN[ROLE_COMMUNIST] = function(ply, target)
         ------ name,  role
-        return false, ply:IsActiveCommunist() and target:IsActiveCommunist()
+        return false, ply:IsCommunist() and target:IsCommunist()
     end
 
     --------------
