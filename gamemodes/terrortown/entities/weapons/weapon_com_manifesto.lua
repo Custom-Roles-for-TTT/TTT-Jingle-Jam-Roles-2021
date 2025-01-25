@@ -179,6 +179,13 @@ function SWEP:DoUnfreeze()
     self.TargetEntity = nil
 end
 
+function SWEP:ResetFreeze()
+    if CLIENT then return end
+    self.TargetEntity:SetNWInt("CommunistFreezeCount", 0)
+    self.TargetEntity:Freeze(false)
+    self.TargetEntity = nil
+end
+
 function SWEP:Convert(entity)
     local owner = self:GetOwner()
     if IsValid(owner) then
@@ -219,7 +226,7 @@ function SWEP:DoConvert()
 
     -- Not actually an error, but it resets the things we want
     self:FireError()
-    self:DoUnfreeze()
+    self:ResetFreeze()
 
     SendFullStateUpdate()
     -- Reset the victim's max health
