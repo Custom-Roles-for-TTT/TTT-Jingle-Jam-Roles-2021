@@ -137,7 +137,7 @@ if CLIENT then
             end
             local _, h = surface.GetTextSize(text)
 
-            -- Move this up based on how many other labels here are
+            -- Move this up based on how many other labels there are
             if active_labels then
                 label_top = label_top + (20 * #active_labels)
             else
