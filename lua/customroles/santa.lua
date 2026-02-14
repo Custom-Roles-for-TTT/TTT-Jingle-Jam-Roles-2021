@@ -73,7 +73,7 @@ if CLIENT then
             if santa_random_presents:GetBool() then
                 html = html .. ROLE_STRINGS[ROLE_SANTA] .. " can shoot random shop items"
             else
-                html = html .. "Instead of buying items for themselves, " .. ROLE_STRINGS[ROLE_SANTA].. " can buy an item from their shop and shoot it"
+                html = html .. "Instead of buying items for themselves, " .. ROLE_STRINGS[ROLE_SANTA] .. " can buy an item from their shop and shoot it"
             end
             html = html .. " from their <span style='color: rgb(" .. roleColor.r .. ", " .. roleColor.g .. ", " .. roleColor.b .. ")'>christmas cannon</span>. Each player can only open one gift.</span>"
 
