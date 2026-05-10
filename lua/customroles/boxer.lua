@@ -575,7 +575,7 @@ if CLIENT then
     hook.Add("TTTTargetIDEntityHintLabel", "Boxer_KnockedOut_TTTTargetIDEntityHintLabel", function(ent, cli, text, col)
         if text == "box_revive_placeholder" then
             local ply = ent:GetNWEntity("BoxerRagdolledPly", nil)
-            -- Don't show this label and a knocked out player looks at themselves
+            -- Don't show this label if a knocked out player looks at themselves
             if IsPlayer(ply) and ply == cli then
                 return ""
             end

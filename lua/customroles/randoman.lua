@@ -33,53 +33,55 @@ ROLE.loadout = {}
 ROLE.startingcredits = 1
 ROLE.selectionpredicate = function() return Randomat and type(Randomat.IsInnocentTeam) == "function" end
 
-ROLE.convars = {
-    {
-        cvar = "ttt_randoman_banned_randomats",
-        type = ROLE_CONVAR_TYPE_TEXT
-    },
-    {
-        cvar = "ttt_randoman_prevent_auto_randomat",
-        type = ROLE_CONVAR_TYPE_BOOL
-    },
-    {
-        cvar = "ttt_randoman_guaranteed_categories",
-        type = ROLE_CONVAR_TYPE_TEXT
-    },
-    {
-        cvar = "ttt_randoman_guaranteed_randomats",
-        type = ROLE_CONVAR_TYPE_TEXT
-    },
-    {
-        cvar = "ttt_randoman_event_on_unbought_death",
-        type = ROLE_CONVAR_TYPE_BOOL
-    },
-    {
-        cvar = "ttt_randoman_choose_event_on_drop",
-        type = ROLE_CONVAR_TYPE_BOOL
-    },
-    {
-        cvar = "ttt_randoman_guarantee_pockets_event",
-        type = ROLE_CONVAR_TYPE_BOOL
-    },
-    {
-        cvar = "ttt_randoman_choose_event_on_drop_count",
-        type = ROLE_CONVAR_TYPE_NUM,
-        decimal = 0
-    },
-    {
-        cvar = "ttt_randoman_is_independent",
-        type = ROLE_CONVAR_TYPE_BOOL
-    },
-    {
-        cvar = "ttt_randoman_can_see_jesters",
-        type = ROLE_CONVAR_TYPE_BOOL
-    },
-    {
-        cvar = "ttt_randoman_update_scoreboard",
-        type = ROLE_CONVAR_TYPE_BOOL
+if ROLE.selectionpredicate() then
+    ROLE.convars = {
+        {
+            cvar = "ttt_randoman_banned_randomats",
+            type = ROLE_CONVAR_TYPE_TEXT
+        },
+        {
+            cvar = "ttt_randoman_prevent_auto_randomat",
+            type = ROLE_CONVAR_TYPE_BOOL
+        },
+        {
+            cvar = "ttt_randoman_guaranteed_categories",
+            type = ROLE_CONVAR_TYPE_TEXT
+        },
+        {
+            cvar = "ttt_randoman_guaranteed_randomats",
+            type = ROLE_CONVAR_TYPE_TEXT
+        },
+        {
+            cvar = "ttt_randoman_event_on_unbought_death",
+            type = ROLE_CONVAR_TYPE_BOOL
+        },
+        {
+            cvar = "ttt_randoman_choose_event_on_drop",
+            type = ROLE_CONVAR_TYPE_BOOL
+        },
+        {
+            cvar = "ttt_randoman_guarantee_pockets_event",
+            type = ROLE_CONVAR_TYPE_BOOL
+        },
+        {
+            cvar = "ttt_randoman_choose_event_on_drop_count",
+            type = ROLE_CONVAR_TYPE_NUM,
+            decimal = 0
+        },
+        {
+            cvar = "ttt_randoman_is_independent",
+            type = ROLE_CONVAR_TYPE_BOOL
+        },
+        {
+            cvar = "ttt_randoman_can_see_jesters",
+            type = ROLE_CONVAR_TYPE_BOOL
+        },
+        {
+            cvar = "ttt_randoman_update_scoreboard",
+            type = ROLE_CONVAR_TYPE_BOOL
+        }
     }
-}
+end
 
 RegisterRole(ROLE)
 
