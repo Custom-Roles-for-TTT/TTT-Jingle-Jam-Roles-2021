@@ -49,8 +49,6 @@ ROLE.translations = {
     }
 }
 
-RegisterRole(ROLE)
-
 local santa_random_presents = CreateConVar("ttt_santa_random_presents", 0, FCVAR_REPLICATED)
 local santa_jesters_are_naughty = CreateConVar("ttt_santa_jesters_are_naughty", 1, FCVAR_REPLICATED)
 local santa_independents_are_naughty = CreateConVar("ttt_santa_independents_are_naughty", 0, FCVAR_REPLICATED)
@@ -106,7 +104,7 @@ if CLIENT then
         end
     end)
 
-    hook.Add("TTTHUDInfoPaint", "Santa_TTTHUDInfoPaint", function(client, label_left, label_top, active_labels)
+    local function Santa_TTTHUDInfoPaint(client, label_left, label_top, active_labels)
         if client:IsSanta() and IsValid(client:GetActiveWeapon()) and client:GetActiveWeapon():GetClass() == "weapon_san_christmas_cannon" then
             surface.SetFont("TabLarge")
             surface.SetTextColor(255, 255, 255, 230)
@@ -152,7 +150,15 @@ if CLIENT then
                 table.insert(active_labels, "santa_role_cannon")
             end
         end
-    end)
+    end
+
+    ------------------
+    -- REGISTRATION --
+    ------------------
+
+    ROLE.registeredhooks = {
+        ["TTTHUDInfoPaint"] = Santa_TTTHUDInfoPaint
+    }
 end
 
 if SERVER then
@@ -189,7 +195,7 @@ if SERVER then
     end
 
     -- We don't want Santa to receive items unless random presents is turned on
-    hook.Add("TTTCanOrderEquipment", "Santa_TTTCanOrderEquipment", function(ply, id, is_item)
+    local function Santa_TTTCanOrderEquipment(ply, id, is_item)
         if ply:IsSanta() and not santa_random_presents:GetBool() then
             if ply:GetNWString("SantaLoadedItem") == "" then
                 -- Technically need to check if santa is actually allowed to buy the item here before loading it but this will only matter if people specifically try to break the role with console commands
@@ -202,7 +208,7 @@ if SERVER then
             end
             return false
         end
-    end)
+    end
 
     hook.Add("TTTPrepareRound", "Santa_TTTPrepareRound", function()
         for _, v in PlayerIterator() do
@@ -236,25 +242,25 @@ if SERVER then
         end
     end)
 
-    hook.Add("TTTEndRound", "Santa_TTTEndRound", function()
+    local function Santa_TTTEndRound()
         if timer.Exists("santacredits") then timer.Remove("santacredits") end
-    end)
+    end
 
-    hook.Add("TTTRewardDetectiveTraitorDeath", "Santa_TTTRewardDetectiveTraitorDeath", function(ply, victim, attacker, amount)
+    local function Santa_TTTRewardDetectiveTraitorDeath(ply, victim, attacker, amount)
         -- If random presents are disabled santa should not receive credits
         if not santa_random_presents:GetBool() and ply:IsActiveSanta() then
             return true
         end
-    end)
+    end
 
-    hook.Add("TTTRewardPlayerKilledAmount", "Santa_TTTRewardPlayerKilledAmount", function(victim, attacker, amount)
+    local function Santa_TTTRewardPlayerKilledAmount(victim, attacker, amount)
         -- If random presents are disabled santa should not receive credits
         if not santa_random_presents:GetBool() and attacker:IsActiveSanta() then
             return 0
         end
-    end)
+    end
 
-    hook.Add("EntityTakeDamage", "Santa_EntityTakeDamage", function(target, dmg)
+    local function Santa_EntityTakeDamage(target, dmg)
         -- Don't let being hit by a present hurt you
         local attacker = dmg:GetAttacker()
         if not IsValid(attacker) then return end
@@ -263,7 +269,7 @@ if SERVER then
             dmg:SetDamage(0)
             dmg:ScaleDamage(0)
         end
-    end)
+    end
 
     hook.Add("TTTPlayerRoleChanged", "Santa_TTTPlayerRoleChanged", function(ply, oldRole, newRole)
         if newRole == ROLE_SANTA and oldRole ~= newRole then
@@ -275,7 +281,7 @@ if SERVER then
         ["blackmarket"] = "makes their cannon unusable",
         ["future"] = "can't consistently work with the dynamic shop events"
     }
-    hook.Add("TTTRandomatCanEventRun", "Santa_TTTRandomatCanEventRun", function(event)
+    local function Santa_TTTRandomatCanEventRun(event)
         if not blockedEvents[event.Id] then return end
 
         for _, ply in PlayerIterator() do
@@ -283,5 +289,20 @@ if SERVER then
                 return false, "There is " .. ROLE_STRINGS_EXT[ROLE_SANTA] .. " in the round and this event " .. blockedEvents[event.Id]
             end
         end
-    end)
+    end
+
+    ------------------
+    -- REGISTRATION --
+    ------------------
+
+    ROLE.registeredhooks = {
+        ["EntityTakeDamage"] = Santa_EntityTakeDamage,
+        ["TTTCanOrderEquipment"] = Santa_TTTCanOrderEquipment,
+        ["TTTEndRound"] = Santa_TTTEndRound,
+        ["TTTRandomatCanEventRun"] = Santa_TTTRandomatCanEventRun,
+        ["TTTRewardDetectiveTraitorDeath"] = Santa_TTTRewardDetectiveTraitorDeath,
+        ["TTTRewardPlayerKilledAmount"] = Santa_TTTRewardPlayerKilledAmount
+    }
 end
+
+RegisterRole(ROLE)
