@@ -83,17 +83,15 @@ if ROLE.selectionpredicate() then
     }
 end
 
-RegisterRole(ROLE)
-
 if SERVER then
     local eventOnUnboughtDeathCvar = CreateConVar("ttt_randoman_event_on_unbought_death", 0, FCVAR_NONE, "Whether a randomat should trigger if a randoman dies and never bought anything that round", 0, 1)
     local chooseEventOnDropCvar = CreateConVar("ttt_randoman_choose_event_on_drop", 1, FCVAR_NONE, "Whether the held randomat item should always trigger \"Choose an event!\" after being bought by a randoman and dropped on the ground", 0, 1)
     local chooseEventOnDropCountCvar = CreateConVar("ttt_randoman_choose_event_on_drop_count", 5, FCVAR_NONE, "The number of events a player should be able to choose from when using a dropped randomat", 1, 10)
 
     -- Prevents auto-randomat triggering if there is a Randoman alive
-    hook.Add("TTTRandomatShouldAuto", "StopAutoRandomatWithRandoman", function()
+    local function StopAutoRandomatWithRandoman()
         if preventAutoRandomatCvar:GetBool() and player.IsRoleLiving(ROLE_RANDOMAN) then return false end
-    end)
+    end
 
     local blockedEvents = {
         ["blackmarket"] = "removes the main feature of the role",
@@ -102,17 +100,17 @@ if SERVER then
     }
 
     -- Prevents a randomat from ever triggering if there is a Randoman in the round
-    hook.Add("TTTRandomatCanEventRun", "HardBanRandomanEvents", function(event)
+    local function HardBanRandomanEvents(event)
         if not blockedEvents[event.Id] then return end
 
         for _, ply in PlayerIterator() do
             if ply:IsRandoman() then return false, "There is " .. ROLE_STRINGS_EXT[ROLE_RANDOMAN] .. " in the round and this event " .. blockedEvents[event.Id] end
         end
-    end)
+    end
 
     local boughtAsRandoman = {}
 
-    hook.Add("TTTOrderedEquipment", "RandomanBoughtItem", function(ply, id, is_item, from_randomat)
+    local function RandomanBoughtItem(ply, id, is_item, from_randomat)
         if ply:IsRandoman() then
             -- Let the randoman be able to drop the randomat SWEP
             if id == "weapon_ttt_randomat" then
@@ -140,27 +138,27 @@ if SERVER then
                 boughtAsRandoman[ply] = true
             end
         end
-    end)
+    end
 
     hook.Add("TTTPrepareRound", "RandomanReset", function()
         table.Empty(boughtAsRandoman)
     end)
 
     -- Triggering a random event if the randoman dies and hasn't bought anything, and the convar is enabled
-    hook.Add("PostPlayerDeath", "RandomanDeathEventTrigger", function(ply)
+    local function RandomanDeathEventTrigger(ply)
         if ply:IsRandoman() and GetRoundState() == ROUND_ACTIVE and eventOnUnboughtDeathCvar:GetBool() and not boughtAsRandoman[ply] then
             Randomat:TriggerRandomEvent(ply)
             -- Just in case the randoman somehow respawns, only trigger a randomat on death once
             boughtAsRandoman[ply] = true
         end
-    end)
+    end
 
     -- Stuff for the independent convar
     hook.Add("Initialize", "RandomanIndependentGenerateWinID", function()
         WIN_RANDOMAN = GenerateNewWinID(ROLE_RANDOMAN)
     end)
 
-    hook.Add("TTTCheckForWin", "RandomanIndependentWin", function()
+    local function RandomanIndependentWin()
         if not independentCvar:GetBool() then return end
 
         local randomanAlive = false
@@ -181,15 +179,28 @@ if SERVER then
         elseif randomanAlive then
             return WIN_NONE
         end
-    end)
+    end
 
-    hook.Add("TTTPrintResultMessage", "RandomanIndependentWinMessage", function(win_type)
+    local function RandomanIndependentWinMessage(win_type)
         if win_type == WIN_RANDOMAN then
             LANG.Msg("win_randoman", { role = ROLE_STRINGS[ROLE_RANDOMAN] })
             ServerLog("Result: The " .. ROLE_STRINGS[ROLE_RANDOMAN] .. " wins.\n")
             return true
         end
-    end)
+    end
+
+    ------------------
+    -- REGISTRATION --
+    ------------------
+
+    ROLE.registeredhooks = {
+        ["PostPlayerDeath"] = RandomanDeathEventTrigger,
+        ["TTTCheckForWin"] = RandomanIndependentWin,
+        ["TTTOrderedEquipment"] = RandomanBoughtItem,
+        ["TTTPrintResultMessage"] = RandomanIndependentWinMessage,
+        ["TTTRandomatCanEventRun"] = HardBanRandomanEvents,
+        ["TTTRandomatShouldAuto"] = StopAutoRandomatWithRandoman
+    }
 end
 
 if CLIENT then
@@ -197,13 +208,13 @@ if CLIENT then
         WIN_RANDOMAN = WINS_BY_ROLE[ROLE_RANDOMAN]
     end)
 
-    hook.Add("TTTScoringWinTitle", "RandomanWinTitle", function(wintype, wintitles, title, secondaryWinRole)
+    local function RandomanWinTitle(wintype, wintitles, title, secondaryWinRole)
         if wintype == WIN_RANDOMAN then
             return { txt = "hilite_win_randoman", params = { role = ROLE_STRINGS[ROLE_RANDOMAN]:upper() }, c = ROLE_COLORS[ROLE_RANDOMAN] }
         end
-    end)
+    end
 
-    hook.Add("TTTRolePopupRoleStringOverride", "RandomanIndependentPopupText", function(client, roleString)
+    local function RandomanIndependentPopupText(client, roleString)
         if not IsPlayer(client) or not client:IsRandoman() then return end
 
         if independentCvar:GetBool() then
@@ -211,7 +222,7 @@ if CLIENT then
         end
 
         return roleString
-    end)
+    end
 
     hook.Add("TTTTutorialRoleText", "RandomanTutorialRoleText", function(role, titleLabel, roleIcon)
         if role == ROLE_RANDOMAN then
@@ -259,6 +270,15 @@ if CLIENT then
             return html
         end
     end)
+
+    ------------------
+    -- REGISTRATION --
+    ------------------
+
+    ROLE.registeredhooks = {
+        ["TTTRolePopupRoleStringOverride"] = RandomanIndependentPopupText,
+        ["TTTScoringWinTitle"] = RandomanWinTitle
+    }
 end
 
 hook.Add("TTTUpdateRoleState", "RandomanUpdateRoleState", function()
@@ -267,3 +287,5 @@ hook.Add("TTTUpdateRoleState", "RandomanUpdateRoleState", function()
     DETECTIVE_ROLES[ROLE_RANDOMAN] = not is_independent
     INNOCENT_ROLES[ROLE_RANDOMAN] = not is_independent
 end)
+
+RegisterRole(ROLE)

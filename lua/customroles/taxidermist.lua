@@ -31,8 +31,6 @@ ROLE.translations = {
     }
 }
 
-RegisterRole(ROLE)
-
 if CLIENT then
     hook.Add("TTTTutorialRoleText", "Taxidermist_TTTTutorialRoleText", function(role, titleLabel)
         if role == ROLE_TAXIDERMIST then
@@ -41,3 +39,5 @@ if CLIENT then
         end
     end)
 end
+
+RegisterRole(ROLE)

@@ -57,8 +57,6 @@ ROLE.translations = {
     }
 }
 
-RegisterRole(ROLE)
-
 if CLIENT then
 
     ----------------
@@ -112,65 +110,65 @@ if CLIENT then
         })
     end)
 
-    hook.Add("TTTEventFinishText", "Communist_EventFinishText", function(e)
+    local function Communist_EventFinishText(e)
         if e.win == WIN_COMMUNIST then
             return LANG.GetParamTranslation("ev_win_communist", { role = ROLE_STRINGS_PLURAL[ROLE_COMMUNIST] })
         end
-    end)
+    end
 
-    hook.Add("TTTEventFinishIconText", "Communist_EventFinishIconText", function(e, win_string, role_string)
+    local function Communist_EventFinishIconText(e, win_string, role_string)
         if e.win == WIN_COMMUNIST then
             return win_string, ROLE_STRINGS[ROLE_COMMUNIST]
         end
-    end)
+    end
 
     -------------
     -- SCORING --
     -------------
 
-    hook.Add("TTTScoringWinTitle", "Communist_ScoringWinTitle", function(wintype, wintitles, title, secondaryWinRole)
+    local function Communist_ScoringWinTitle(wintype, wintitles, title, secondaryWinRole)
         if wintype == WIN_COMMUNIST then
             return { txt = "hilite_win_communist", params = { role = ROLE_STRINGS[ROLE_COMMUNIST]:upper() }, c = ROLE_COLORS[ROLE_COMMUNIST] }
         end
-    end)
+    end
 
     -- Show the player's starting role icon if they were converted to Communist and group them with their original team
-    hook.Add("TTTScoringSummaryRender", "Communist_TTTScoringSummaryRender", function(ply, roleFileName, groupingRole, roleColor, name, startingRole, finalRole)
+    local function Communist_TTTScoringSummaryRender(ply, roleFileName, groupingRole, roleColor, name, startingRole, finalRole)
         if finalRole == ROLE_COMMUNIST then
             return ROLE_STRINGS_SHORT[startingRole], startingRole
         end
-    end)
+    end
 
     ---------------
     -- TARGET ID --
     ---------------
 
     -- Show the correct role icon for communists
-    hook.Add("TTTTargetIDPlayerRoleIcon", "Communist_TTTTargetIDPlayerRoleIcon", function(ply, cli, role, noz, colorRole, hideBeggar, showJester, hideBodysnatcher)
+    local function Communist_TTTTargetIDPlayerRoleIcon(ply, cli, role, noz, colorRole, hideBeggar, showJester, hideBodysnatcher)
         if cli:IsCommunist() and ply:IsCommunist() then
             return ROLE_COMMUNIST, true
         end
-    end)
+    end
 
     -- Show the correct target ring for communists
-    hook.Add("TTTTargetIDPlayerRing", "Communist_TTTTargetIDPlayerRing", function(ent, cli, ringVisible)
+    local function Communist_TTTTargetIDPlayerRing(ent, cli, ringVisible)
         if not IsPlayer(ent) then return end
 
         if cli:IsCommunist() and ent:IsCommunist() then
             return true, ROLE_COLORS_RADAR[ROLE_COMMUNIST]
         end
-    end)
+    end
 
     -- Show the correct role name for communists
-    hook.Add("TTTTargetIDPlayerText", "Communist_TTTTargetIDPlayerText", function(ent, cli, text, col)
+    local function Communist_TTTTargetIDPlayerText(ent, cli, text, col)
         if not IsPlayer(ent) then return end
 
         if cli:IsCommunist() and ent:IsCommunist() then
             return StringUpper(ROLE_STRINGS[ROLE_COMMUNIST]), ROLE_COLORS_RADAR[ROLE_COMMUNIST]
         end
-    end)
+    end
 
-    ROLE_IS_TARGETID_OVERRIDDEN[ROLE_COMMUNIST] = function(ply, target, showJester)
+    ROLE.istargetidoverridden = function(ply, target, showJester)
         if not IsPlayer(target) then return end
 
         -- Override all three pieces
@@ -184,13 +182,13 @@ if CLIENT then
     -- SCOREBOARD --
     ----------------
 
-    hook.Add("TTTScoreboardPlayerRole", "Communist_TTTScoreboardPlayerRole", function(ply, cli, color, roleFileName)
+    local function Communist_TTTScoreboardPlayerRole(ply, cli, color, roleFileName)
         if cli:IsCommunist() and ply:IsCommunist() then
             return ROLE_COLORS_SCOREBOARD[ROLE_COMMUNIST], ROLE_STRINGS_SHORT[ROLE_COMMUNIST]
         end
-    end)
+    end
 
-    ROLE_IS_SCOREBOARD_INFO_OVERRIDDEN[ROLE_COMMUNIST] = function(ply, target)
+    ROLE.isscoreboardinfooverridden = function(ply, target)
         ------ name,  role
         return false, ply:IsCommunist() and target:IsCommunist()
     end
@@ -220,6 +218,21 @@ if CLIENT then
             return html
         end
     end)
+
+    ------------------
+    -- REGISTRATION --
+    ------------------
+
+    ROLE.registeredhooks = {
+        ["TTTEventFinishIconText"] = Communist_EventFinishIconText,
+        ["TTTEventFinishText"] = Communist_EventFinishText,
+        ["TTTScoreboardPlayerRole"] = Communist_TTTScoreboardPlayerRole,
+        ["TTTScoringSummaryRender"] = Communist_TTTScoringSummaryRender,
+        ["TTTScoringWinTitle"] = Communist_ScoringWinTitle,
+        ["TTTTargetIDPlayerRing"] = Communist_TTTTargetIDPlayerRing,
+        ["TTTTargetIDPlayerRoleIcon"] = Communist_TTTTargetIDPlayerRoleIcon,
+        ["TTTTargetIDPlayerText"] = Communist_TTTTargetIDPlayerText
+    }
 end
 
 if SERVER then
@@ -230,7 +243,7 @@ if SERVER then
         EVENT_COMMUNISTCONVERTED = GenerateNewEventID(ROLE_COMMUNIST)
     end)
 
-    hook.Add("TTTCheckForWin", "Communist_CheckForWin", function()
+    local function Communist_CheckForWin()
         local communist_alive = false
         local other_alive = false
         for _, v in PlayerIterator() do
@@ -248,19 +261,30 @@ if SERVER then
         elseif communist_alive then
             return WIN_NONE
         end
-    end)
+    end
 
-    hook.Add("TTTPrintResultMessage", "Communist_PrintResultMessage", function(type)
+    local function Communist_PrintResultMessage(type)
         if type == WIN_COMMUNIST then
             LANG.Msg("win_communist", { role = ROLE_STRINGS[ROLE_COMMUNIST] })
             ServerLog("Result: " .. ROLE_STRINGS[ROLE_COMMUNIST] .. " wins.\n")
             return true
         end
-    end)
+    end
 
     hook.Add("TTTPrepareRound", "Communist_RoleFeatures_PrepareRound", function()
         for _, v in PlayerIterator() do
             v:SetNWInt("CommunistFreezeCount", 0)
         end
     end)
+
+    ------------------
+    -- REGISTRATION --
+    ------------------
+
+    ROLE.registeredhooks = {
+        ["TTTCheckForWin"] = Communist_CheckForWin,
+        ["TTTPrintResultMessage"] = Communist_PrintResultMessage
+    }
 end
+
+RegisterRole(ROLE)
