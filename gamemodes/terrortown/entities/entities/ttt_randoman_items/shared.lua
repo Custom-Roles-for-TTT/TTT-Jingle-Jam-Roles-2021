@@ -57,9 +57,9 @@ if SERVER then
     util.AddNetworkString("UpdateRandomanItems")
 
     -- Lame is pointless to have in the shop as it itself does nothing
-    local randoman_banned_randomats = CreateConVar("ttt_randoman_banned_randomats", "lame", FCVAR_NONE, "Events not allowed in the randoman's shop, separate ids with commas. You can find an ID by looking at an event in the randomat ULX menu.")
+    local randoman_banned_randomats = CreateConVar("ttt_randoman_banned_randomats", "lame,credits", FCVAR_NONE, "Events not allowed in the randoman's shop, separate ids with commas. You can find an ID by looking at an event in the randomat ULX menu.")
     local randoman_guaranteed_categories = CreateConVar("ttt_randoman_guaranteed_categories", "biased_innocent,fun,moderateimpact", FCVAR_NONE, "At least one randomat from each of these categories will always be in the randoman's shop. You can find a randomat's category by looking at an event in the randomat ULX menu.")
-    local randoman_guaranteed_randomats = CreateConVar("ttt_randoman_guaranteed_randomats", "", FCVAR_NONE, "Events that will always appear in the randoma's shop, separate ids with commas.")
+    local randoman_guaranteed_randomats = CreateConVar("ttt_randoman_guaranteed_randomats", "", FCVAR_NONE, "Events that will always appear in the randoman's shop, separate ids with commas.")
     local randoman_guarantee_pockets_event = CreateConVar("ttt_randoman_guarantee_pockets_event", 1, FCVAR_NONE, "Whether the \"What did I find in my pocket?\" event should always be available in the randoman's shop while the beggar role is enabled", 0, 1)
 
     local eventsByCategory = {}
@@ -279,8 +279,16 @@ if SERVER then
             if ply:IsRandoman() then
                 for j, item in ipairs(EquipmentItems[ROLE_RANDOMAN]) do
                     -- Check that it is using one of the IDs used by a randoman item
-                    if IsRandomanItem(item.id) and not Randomat:CanEventRun(item.eventid) then
-                        ply:AddEquipmentItem(item.id)
+                    if IsRandomanItem(item.id) then
+                        local itemId = tonumber(item.id)
+                        local canRun = Randomat:CanEventRun(item.eventid)
+                        if ply:HasEquipmentItem(itemId) then
+                            if canRun then
+                                ply:RemoveEquipmentItem(itemId)
+                            end
+                        elseif not canRun then
+                            ply:AddEquipmentItem(itemId)
+                        end
                     end
                 end
             end
