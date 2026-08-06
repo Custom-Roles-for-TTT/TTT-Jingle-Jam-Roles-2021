@@ -137,7 +137,7 @@ if SERVER then
         self:Spectate(OBS_MODE_CHASE)
         self:SpectateEntity(ragdoll)
 
-        -- The diguiser stays in their hand so hide it from view
+        -- The disguiser stays in their hand so hide it from view
         self:DrawViewModel(false)
         self:DrawWorldModel(false)
 
