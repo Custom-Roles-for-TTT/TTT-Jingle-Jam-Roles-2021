@@ -239,14 +239,19 @@ if SERVER then
                 item.name = name
                 net.WriteString(name)
                 -- Update randomat description
-                local description = "'" .. longName .. "' is triggered when you buy this."
+                local description
+                if event.ExtDescription and #event.ExtDescription > 0 then
+                    description = event.ExtDescription
+                elseif event.Description and #event.Description > 0 then
+                    description = Randomat:GetEventDescription(event)
+                end
 
-                if (event.ExtDescription and #event.ExtDescription > 0) or (event.Description and #event.Description > 0) then
-                    description = event.ExtDescription or event.Description
+                if not description or #description == 0 then
+                   description = "'" .. longName .. "' is triggered when you buy this."
+                end
 
-                    if descriptionName then
-                        description = longName .. "\n\n" .. description
-                    end
+                if descriptionName then
+                    description = longName .. "\n\n" .. description
                 end
 
                 -- Add event's category to its description
