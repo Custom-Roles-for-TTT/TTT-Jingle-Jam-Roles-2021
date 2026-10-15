@@ -22,6 +22,7 @@ ROLE.shortdesc = "Spreads communism via their Communist Manifesto. Wins by conve
 
 ROLE.team = ROLE_TEAM_INDEPENDENT
 ROLE.loadout = {"weapon_com_manifesto"}
+ROLE.hasteamchat = true
 
 ROLE.convars = {
     {
